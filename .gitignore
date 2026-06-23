@@ -1,0 +1,16 @@
+# Python仮想環境
+.venv/
+
+# Pythonが自動生成するファイル
+__pycache__/
+*.pyc
+*.pyo
+
+# VSCodeの設定（自分のエディタ設定を人に強制しないため）
+.vscode/
+
+# 環境変数ファイル（APIキーなど秘密情報が入るため！）
+.env
+
+# treeコマンドの出力（不要だからね）
+tree.txt
