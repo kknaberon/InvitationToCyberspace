@@ -41,6 +41,7 @@ class TrainingReport:
     weight_count: int
 
 
+@dataclass(frozen=True, slots=True)
 class HeuristicTeacher:
     """人間の代わりに教師データを作る、簡易攻略AI。
 
@@ -48,6 +49,10 @@ class HeuristicTeacher:
     ただし「置いた直後に何枚取れるか」「最終スコアが良くなるか」
     「中央や角を取れているか」を見て選ぶため、完全ランダムよりは筋のある手を作れます。
     """
+
+    # reply_penalty_weight: 相手の次の最善手をどれくらい警戒するかです。
+    # 0.0なら従来どおり1手先だけ見ます。値を上げると、取られ返しを避けやすくなります。
+    reply_penalty_weight: float = 0.0
 
     def choose_move(self, state: BattleState, rng: random.Random) -> Move:
         """現在の合法手を評価し、最も良い手を1つ返します。"""
@@ -109,6 +114,15 @@ class HeuristicTeacher:
         # 基本評価です。捕獲できる手を強めに、スコア差と置き場所を次に重視します。
         score = (captured_or_placed_gain * 4.0) + (score_diff * 1.5) + position_bonus + card_strength
 
+        # 相手の返し手がある場合、その中で一番痛い手を少し差し引きます。
+        # これにより「今は1枚取れるが、直後に2枚取り返される」ような手を避けやすくします。
+        if self.reply_penalty_weight and not next_state.is_over:
+            opponent_best_reply = max(
+                self._score_without_reply(next_state, reply)
+                for reply in next_state.legal_moves()
+            )
+            score -= opponent_best_reply * self.reply_penalty_weight
+
         # ゲームが終わる手なら、実際の勝敗を非常に強く評価します。
         if next_state.is_over:
             winner = next_state.winner()
@@ -117,6 +131,32 @@ class HeuristicTeacher:
             elif winner is owner.opponent:
                 score -= 100.0
 
+        return score
+
+    def _score_without_reply(self, state: BattleState, move: Move) -> float:
+        """相手の返し手までは見ず、1手だけの評価値を返します。"""
+
+        owner = move.owner
+        before_owned = _owned_board_count(state, owner)
+        next_state = state.apply_move(move)
+        after_owned = _owned_board_count(next_state, owner)
+        captured_or_placed_gain = after_owned - before_owned
+        scores = next_state.score()
+        score_diff = scores[owner] - scores[owner.opponent]
+        card = state.hand_for_owner(owner)[move.hand_index]
+
+        score = (
+            (captured_or_placed_gain * 4.0)
+            + (score_diff * 1.5)
+            + _position_bonus(move.position)
+            + (_card_average(card) / 10.0)
+        )
+        if next_state.is_over:
+            winner = next_state.winner()
+            if winner is owner:
+                score += 100.0
+            elif winner is owner.opponent:
+                score -= 100.0
         return score
 
 

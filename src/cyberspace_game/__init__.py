@@ -36,6 +36,16 @@ from .phase4_ml import (
     train_supervised_model,
 )
 
+# phase5_eval.pyから、学習済みAIとランダムAIの評価処理を読み込みます。
+from .phase5_eval import (
+    ModelAgent,
+    Phase5BattleResult,
+    Phase5EvaluationSummary,
+    evaluate_model_against_random,
+    run_model_vs_random_battle,
+    summarize_phase5_results,
+)
+
 # __all__に書いた名前だけを、このパッケージの代表的な公開機能として扱います。
 # 例: from cyberspace_game import Card, BattleState のように使いやすくなります。
 __all__ = [
@@ -44,23 +54,29 @@ __all__ = [
     "CardPool",
     "HeuristicTeacher",
     "LinearMoveModel",
+    "ModelAgent",
     "Move",
     "MoveFeatureRow",
     "NumberGuessResult",
     "Owner",
+    "Phase5BattleResult",
+    "Phase5EvaluationSummary",
     "RandomAgent",
     "RandomBattleResult",
     "RandomSimulationSummary",
     "TrainingExample",
     "TrainingReport",
     "build_default_card_pool",
+    "evaluate_model_against_random",
     "export_random_ai_features_to_csv",
     "generate_random_ai_feature_rows",
     "generate_teacher_examples",
     "resolve_number_guess",
+    "run_model_vs_random_battle",
     "run_random_battle",
     "run_random_simulation",
     "score_guess",
+    "summarize_phase5_results",
     "train_and_save_supervised_model",
     "train_supervised_model",
 ]
