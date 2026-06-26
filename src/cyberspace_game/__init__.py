@@ -18,6 +18,13 @@ from .random_ai import (
     run_random_simulation,
 )
 
+# phase3_csv.pyから、CSV出力用の特徴量行とエクスポート処理を読み込みます。
+from .phase3_csv import (
+    MoveFeatureRow,
+    export_random_ai_features_to_csv,
+    generate_random_ai_feature_rows,
+)
+
 # __all__に書いた名前だけを、このパッケージの代表的な公開機能として扱います。
 # 例: from cyberspace_game import Card, BattleState のように使いやすくなります。
 __all__ = [
@@ -25,12 +32,15 @@ __all__ = [
     "Card",
     "CardPool",
     "Move",
+    "MoveFeatureRow",
     "NumberGuessResult",
     "Owner",
     "RandomAgent",
     "RandomBattleResult",
     "RandomSimulationSummary",
     "build_default_card_pool",
+    "export_random_ai_features_to_csv",
+    "generate_random_ai_feature_rows",
     "resolve_number_guess",
     "run_random_battle",
     "run_random_simulation",
