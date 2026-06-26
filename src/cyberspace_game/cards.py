@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import math
 import random
 from typing import Iterable
 
@@ -20,6 +19,124 @@ TARGET_GRADE_AVERAGES: dict[int, float] = {
 
 # 1グレードは20枚、1枚につき上下左右4値なので、平均計算の対象は80個です。
 CARD_VALUES_PER_GRADE = 20 * 4
+
+# カード定義の並びは以下の順番です。
+# (カードID, カード名, グレード, 上, 右, 下, 左)
+#
+# ここを直接編集すれば、カード名や上下左右の強さを手で調整できます。
+# ただし、グレードごとの平均値を企画書どおりに保ちたい場合は、
+# 各グレード20枚 * 4方向 = 80個の数値平均に注意してください。
+CARD_DEFINITIONS: list[tuple[str, str, int, int, int, int, int]] = [
+    # グレード0: 80か所の平均 3.0
+    ("G0-01", "Grade 0 Card 01", 0, 9, 1, 1, 1),
+    ("G0-02", "Grade 0 Card 02", 0, 1, 9, 1, 1),
+    ("G0-03", "Grade 0 Card 03", 0, 1, 1, 9, 1),
+    ("G0-04", "Grade 0 Card 04", 0, 1, 1, 1, 9),
+    ("G0-05", "Grade 0 Card 05", 0, 6, 2, 2, 2),
+    ("G0-06", "Grade 0 Card 06", 0, 2, 6, 2, 2),
+    ("G0-07", "Grade 0 Card 07", 0, 2, 2, 6, 2),
+    ("G0-08", "Grade 0 Card 08", 0, 2, 2, 2, 6),
+    ("G0-09", "Grade 0 Card 09", 0, 3, 3, 3, 3),
+    ("G0-10", "Grade 0 Card 10", 0, 4, 3, 2, 3),
+    ("G0-11", "Grade 0 Card 11", 0, 3, 4, 3, 2),
+    ("G0-12", "Grade 0 Card 12", 0, 2, 3, 4, 3),
+    ("G0-13", "Grade 0 Card 13", 0, 3, 2, 3, 4),
+    ("G0-14", "Grade 0 Card 14", 0, 5, 1, 5, 1),
+    ("G0-15", "Grade 0 Card 15", 0, 1, 5, 1, 5),
+    ("G0-16", "Grade 0 Card 16", 0, 7, 1, 2, 2),
+    ("G0-17", "Grade 0 Card 17", 0, 2, 7, 1, 2),
+    ("G0-18", "Grade 0 Card 18", 0, 2, 2, 7, 1),
+    ("G0-19", "Grade 0 Card 19", 0, 1, 2, 2, 7),
+    ("G0-20", "Grade 0 Card 20", 0, 4, 4, 2, 2),
+
+    # グレード1: 80か所の平均 4.2
+    ("G1-01", "Grade 1 Card 01", 1, 8, 3, 3, 3),
+    ("G1-02", "Grade 1 Card 02", 1, 3, 8, 3, 3),
+    ("G1-03", "Grade 1 Card 03", 1, 3, 3, 8, 3),
+    ("G1-04", "Grade 1 Card 04", 1, 3, 3, 3, 8),
+    ("G1-05", "Grade 1 Card 05", 1, 6, 4, 4, 3),
+    ("G1-06", "Grade 1 Card 06", 1, 3, 6, 4, 4),
+    ("G1-07", "Grade 1 Card 07", 1, 4, 3, 6, 4),
+    ("G1-08", "Grade 1 Card 08", 1, 4, 4, 3, 6),
+    ("G1-09", "Grade 1 Card 09", 1, 5, 5, 4, 3),
+    ("G1-10", "Grade 1 Card 10", 1, 3, 5, 5, 4),
+    ("G1-11", "Grade 1 Card 11", 1, 4, 3, 5, 5),
+    ("G1-12", "Grade 1 Card 12", 1, 5, 4, 3, 5),
+    ("G1-13", "Grade 1 Card 13", 1, 7, 2, 5, 3),
+    ("G1-14", "Grade 1 Card 14", 1, 3, 7, 2, 5),
+    ("G1-15", "Grade 1 Card 15", 1, 5, 3, 7, 2),
+    ("G1-16", "Grade 1 Card 16", 1, 2, 5, 3, 7),
+    ("G1-17", "Grade 1 Card 17", 1, 4, 4, 4, 4),
+    ("G1-18", "Grade 1 Card 18", 1, 7, 3, 3, 3),
+    ("G1-19", "Grade 1 Card 19", 1, 3, 7, 3, 3),
+    ("G1-20", "Grade 1 Card 20", 1, 3, 3, 7, 3),
+
+    # グレード2: 80か所の平均 5.4
+    ("G2-01", "Grade 2 Card 01", 2, 9, 5, 4, 4),
+    ("G2-02", "Grade 2 Card 02", 2, 4, 9, 5, 4),
+    ("G2-03", "Grade 2 Card 03", 2, 4, 4, 9, 5),
+    ("G2-04", "Grade 2 Card 04", 2, 5, 4, 4, 9),
+    ("G2-05", "Grade 2 Card 05", 2, 7, 6, 5, 4),
+    ("G2-06", "Grade 2 Card 06", 2, 4, 7, 6, 5),
+    ("G2-07", "Grade 2 Card 07", 2, 5, 4, 7, 6),
+    ("G2-08", "Grade 2 Card 08", 2, 6, 5, 4, 7),
+    ("G2-09", "Grade 2 Card 09", 2, 8, 3, 8, 3),
+    ("G2-10", "Grade 2 Card 10", 2, 3, 8, 3, 8),
+    ("G2-11", "Grade 2 Card 11", 2, 6, 6, 5, 5),
+    ("G2-12", "Grade 2 Card 12", 2, 10, 4, 4, 4),
+    ("G2-13", "Grade 2 Card 13", 2, 6, 5, 5, 5),
+    ("G2-14", "Grade 2 Card 14", 2, 8, 5, 4, 4),
+    ("G2-15", "Grade 2 Card 15", 2, 4, 8, 5, 4),
+    ("G2-16", "Grade 2 Card 16", 2, 4, 4, 8, 5),
+    ("G2-17", "Grade 2 Card 17", 2, 5, 4, 4, 8),
+    ("G2-18", "Grade 2 Card 18", 2, 7, 7, 4, 3),
+    ("G2-19", "Grade 2 Card 19", 2, 3, 7, 7, 4),
+    ("G2-20", "Grade 2 Card 20", 2, 4, 3, 7, 7),
+
+    # グレード3: 80か所の平均 6.8
+    ("G3-01", "Grade 3 Card 01", 3, 10, 7, 6, 5),
+    ("G3-02", "Grade 3 Card 02", 3, 5, 10, 7, 6),
+    ("G3-03", "Grade 3 Card 03", 3, 6, 5, 10, 7),
+    ("G3-04", "Grade 3 Card 04", 3, 7, 6, 5, 10),
+    ("G3-05", "Grade 3 Card 05", 3, 9, 7, 6, 5),
+    ("G3-06", "Grade 3 Card 06", 3, 5, 9, 7, 6),
+    ("G3-07", "Grade 3 Card 07", 3, 6, 5, 9, 7),
+    ("G3-08", "Grade 3 Card 08", 3, 7, 6, 5, 9),
+    ("G3-09", "Grade 3 Card 09", 3, 8, 8, 6, 5),
+    ("G3-10", "Grade 3 Card 10", 3, 5, 8, 8, 6),
+    ("G3-11", "Grade 3 Card 11", 3, 6, 5, 8, 8),
+    ("G3-12", "Grade 3 Card 12", 3, 8, 6, 5, 8),
+    ("G3-13", "Grade 3 Card 13", 3, 10, 4, 9, 4),
+    ("G3-14", "Grade 3 Card 14", 3, 4, 10, 4, 9),
+    ("G3-15", "Grade 3 Card 15", 3, 9, 4, 10, 4),
+    ("G3-16", "Grade 3 Card 16", 3, 4, 9, 4, 10),
+    ("G3-17", "Grade 3 Card 17", 3, 7, 7, 7, 6),
+    ("G3-18", "Grade 3 Card 18", 3, 6, 7, 7, 7),
+    ("G3-19", "Grade 3 Card 19", 3, 8, 7, 6, 6),
+    ("G3-20", "Grade 3 Card 20", 3, 6, 8, 7, 6),
+
+    # グレード4: 80か所の平均 8.2
+    ("G4-01", "Grade 4 Card 01", 4, 10, 9, 8, 6),
+    ("G4-02", "Grade 4 Card 02", 4, 6, 10, 9, 8),
+    ("G4-03", "Grade 4 Card 03", 4, 8, 6, 10, 9),
+    ("G4-04", "Grade 4 Card 04", 4, 9, 8, 6, 10),
+    ("G4-05", "Grade 4 Card 05", 4, 10, 10, 7, 6),
+    ("G4-06", "Grade 4 Card 06", 4, 6, 10, 10, 7),
+    ("G4-07", "Grade 4 Card 07", 4, 7, 6, 10, 10),
+    ("G4-08", "Grade 4 Card 08", 4, 10, 7, 6, 10),
+    ("G4-09", "Grade 4 Card 09", 4, 9, 9, 8, 7),
+    ("G4-10", "Grade 4 Card 10", 4, 7, 9, 9, 8),
+    ("G4-11", "Grade 4 Card 11", 4, 8, 7, 9, 9),
+    ("G4-12", "Grade 4 Card 12", 4, 9, 8, 7, 9),
+    ("G4-13", "Grade 4 Card 13", 4, 10, 8, 10, 5),
+    ("G4-14", "Grade 4 Card 14", 4, 5, 10, 8, 10),
+    ("G4-15", "Grade 4 Card 15", 4, 10, 5, 10, 8),
+    ("G4-16", "Grade 4 Card 16", 4, 8, 10, 5, 10),
+    ("G4-17", "Grade 4 Card 17", 4, 8, 8, 8, 8),
+    ("G4-18", "Grade 4 Card 18", 4, 10, 9, 7, 6),
+    ("G4-19", "Grade 4 Card 19", 4, 6, 10, 9, 7),
+    ("G4-20", "Grade 4 Card 20", 4, 7, 6, 10, 9),
+]
 
 
 @dataclass(frozen=True, slots=True)
@@ -141,78 +258,26 @@ class CardPool:
 
 
 def build_default_card_pool(seed: int = 2026) -> CardPool:
-    """目標平均値どおりの100枚カードプールを作ります。"""
+    """定数として定義した100枚カードプールを作ります。"""
 
-    # cards: 最終的にCardPoolへ渡す100枚分のカードリストです。
-    cards: list[Card] = []
+    # seed: 以前の自動生成版との互換性のために引数だけ残しています。
+    # 今はCARD_DEFINITIONSをそのまま使うので、値を変えてもカード内容は変わりません。
+    _ = seed
 
-    # grade: 0から4のカードグレードです。
-    # target_average: そのグレードの80個の方向数値が目指す平均値です。
-    for grade, target_average in TARGET_GRADE_AVERAGES.items():
-        # values: 20枚 * 4方向 = 80個分の数値です。
-        # seed + grade にしておくと、グレードごとに違う並びを安定生成できます。
-        values = _build_grade_values(target_average, random.Random(seed + grade))
-
-        # index: グレード内で何枚目のカードかを表します。0始まりなので表示時は+1します。
-        for index in range(20):
-            # 80個の数値を4個ずつ切り出して、1枚のカードにします。
-            top, right, bottom, left = values[index * 4 : index * 4 + 4]
-            cards.append(
-                Card(
-                    card_id=f"G{grade}-{index + 1:02d}",
-                    name=f"Grade {grade} Card {index + 1:02d}",
-                    grade=grade,
-                    top=top,
-                    right=right,
-                    bottom=bottom,
-                    left=left,
-                )
-            )
+    # cards: CARD_DEFINITIONSのタプルをCardクラスへ変換した100枚分のリストです。
+    cards = [
+        Card(
+            card_id=card_id,
+            name=name,
+            grade=grade,
+            top=top,
+            right=right,
+            bottom=bottom,
+            left=left,
+        )
+        for card_id, name, grade, top, right, bottom, left in CARD_DEFINITIONS
+    ]
     return CardPool(tuple(cards))
-
-
-def _build_grade_values(target_average: float, rng: random.Random) -> list[int]:
-    """1グレード80個分の方向数値を、指定平均ぴったりになるよう生成します。"""
-
-    # target_sum: 80個の数値を全部足したときに目指す合計値です。
-    # 例: 平均3.0なら 3.0 * 80 = 240 になります。
-    target_sum = round(target_average * CARD_VALUES_PER_GRADE)
-
-    # base: まず全マスに置く基準値です。平均4.2なら、最初は全部4にします。
-    base = math.floor(target_average)
-
-    # values: 1グレード内の「方向数値80個」を表します。まだカード単位には分けていません。
-    values = [base] * CARD_VALUES_PER_GRADE
-
-    # remainder: 目標合計に届かせるため、baseから+1する個数です。
-    # 平均4.2なら 336 - (4 * 80) = 16 個を5にします。
-    remainder = target_sum - (base * CARD_VALUES_PER_GRADE)
-    for index in rng.sample(range(CARD_VALUES_PER_GRADE), remainder):
-        values[index] += 1
-
-    # 合計値は変えずに、強い方向と弱い方向の偏りを作ります。
-    # これにより「平均は弱いが上だけ9」みたいなカード個性が出ます。
-    for _ in range(240):
-        # high_index: 数値を上げる場所、low_index: 同じ分だけ数値を下げる場所です。
-        high_index, low_index = rng.sample(range(CARD_VALUES_PER_GRADE), 2)
-
-        # max_delta: 1から10の範囲を超えず、かつ1回で極端に動かしすぎない上限です。
-        max_delta = min(10 - values[high_index], values[low_index] - 1, 3)
-        if max_delta <= 0:
-            continue
-
-        # delta: high側へ移す点数です。low側から同じ点数を引くので合計は変わりません。
-        delta = rng.randint(1, max_delta)
-        values[high_index] += delta
-        values[low_index] -= delta
-
-    # カード化したときの並びが単調にならないよう、最後に順番だけ混ぜます。
-    rng.shuffle(values)
-
-    # 念のため、偏り作成後も目標合計が守られているか確認します。
-    if sum(values) != target_sum:
-        raise RuntimeError("Card generation failed to preserve target average")
-    return values
 
 
 def _flatten_values(cards: Iterable[Card]) -> list[int]:
