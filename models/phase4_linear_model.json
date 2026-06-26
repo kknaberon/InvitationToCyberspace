@@ -1,0 +1,33 @@
+{
+  "weights": {
+    "bias": 0.0,
+    "turn_index": 0.0,
+    "is_blue": 0.0,
+    "is_red": 0.0,
+    "is_first_player": 0.0,
+    "is_second_player": 0.0,
+    "self_hand_count": 0.0,
+    "opponent_hand_count": 0.0,
+    "self_board_count": 0.0,
+    "opponent_board_count": 0.0,
+    "card_grade": -0.9499999999999991,
+    "card_top": 0.8799999999999792,
+    "card_right": 0.7799999999999955,
+    "card_bottom": 0.7399999999999791,
+    "card_left": 0.8199999999999792,
+    "card_average": 0.8049999999999782,
+    "position": 0.02499999999999887,
+    "row": 0.10000000000000003,
+    "col": -0.19999999999999954,
+    "is_center": 0.6000000000000001,
+    "is_corner": 0.0,
+    "is_edge": -0.6000000000000001,
+    "adjacent_self": -0.10000000000000046,
+    "adjacent_opponent": 0.10000000000000923,
+    "adjacent_empty": 0.15000000000004754,
+    "ownership_gain": 3.1600000000000024,
+    "score_diff_after": 3.160000000000002,
+    "wins_immediately": 0.0,
+    "loses_immediately": 0.0
+  }
+}
