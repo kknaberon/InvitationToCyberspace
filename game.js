@@ -21,6 +21,9 @@ const ASSETS = {
   },
 };
 
+// 数字当ては最大3回。途中で4ヒットなら、その場で最高グレードを確定します。
+const MAX_GUESS_ATTEMPTS = 3;
+
 const DIRECTIONS = [
   {
     id: "north",
@@ -90,106 +93,106 @@ const ENDING_STEPS = [
 ];
 
 const CARD_DEFINITIONS = [
-  ["G0-01", "Grade 0 Card 01", 0, 9, 1, 1, 1],
-  ["G0-02", "Grade 0 Card 02", 0, 1, 9, 1, 1],
-  ["G0-03", "Grade 0 Card 03", 0, 1, 1, 9, 1],
-  ["G0-04", "Grade 0 Card 04", 0, 1, 1, 1, 9],
-  ["G0-05", "Grade 0 Card 05", 0, 6, 2, 2, 2],
-  ["G0-06", "Grade 0 Card 06", 0, 2, 6, 2, 2],
-  ["G0-07", "Grade 0 Card 07", 0, 2, 2, 6, 2],
-  ["G0-08", "Grade 0 Card 08", 0, 2, 2, 2, 6],
-  ["G0-09", "Grade 0 Card 09", 0, 3, 3, 3, 3],
-  ["G0-10", "Grade 0 Card 10", 0, 4, 3, 2, 3],
-  ["G0-11", "Grade 0 Card 11", 0, 3, 4, 3, 2],
-  ["G0-12", "Grade 0 Card 12", 0, 2, 3, 4, 3],
-  ["G0-13", "Grade 0 Card 13", 0, 3, 2, 3, 4],
-  ["G0-14", "Grade 0 Card 14", 0, 5, 1, 5, 1],
-  ["G0-15", "Grade 0 Card 15", 0, 1, 5, 1, 5],
-  ["G0-16", "Grade 0 Card 16", 0, 7, 1, 2, 2],
-  ["G0-17", "Grade 0 Card 17", 0, 2, 7, 1, 2],
-  ["G0-18", "Grade 0 Card 18", 0, 2, 2, 7, 1],
-  ["G0-19", "Grade 0 Card 19", 0, 1, 2, 2, 7],
-  ["G0-20", "Grade 0 Card 20", 0, 4, 4, 2, 2],
-  ["G1-01", "Grade 1 Card 01", 1, 8, 3, 3, 3],
-  ["G1-02", "Grade 1 Card 02", 1, 3, 8, 3, 3],
-  ["G1-03", "Grade 1 Card 03", 1, 3, 3, 8, 3],
-  ["G1-04", "Grade 1 Card 04", 1, 3, 3, 3, 8],
-  ["G1-05", "Grade 1 Card 05", 1, 6, 4, 4, 3],
-  ["G1-06", "Grade 1 Card 06", 1, 3, 6, 4, 4],
-  ["G1-07", "Grade 1 Card 07", 1, 4, 3, 6, 4],
-  ["G1-08", "Grade 1 Card 08", 1, 4, 4, 3, 6],
-  ["G1-09", "Grade 1 Card 09", 1, 5, 5, 4, 3],
-  ["G1-10", "Grade 1 Card 10", 1, 3, 5, 5, 4],
-  ["G1-11", "Grade 1 Card 11", 1, 4, 3, 5, 5],
-  ["G1-12", "Grade 1 Card 12", 1, 5, 4, 3, 5],
-  ["G1-13", "Grade 1 Card 13", 1, 7, 2, 5, 3],
-  ["G1-14", "Grade 1 Card 14", 1, 3, 7, 2, 5],
-  ["G1-15", "Grade 1 Card 15", 1, 5, 3, 7, 2],
-  ["G1-16", "Grade 1 Card 16", 1, 2, 5, 3, 7],
-  ["G1-17", "Grade 1 Card 17", 1, 4, 4, 4, 4],
-  ["G1-18", "Grade 1 Card 18", 1, 7, 3, 3, 3],
-  ["G1-19", "Grade 1 Card 19", 1, 3, 7, 3, 3],
-  ["G1-20", "Grade 1 Card 20", 1, 3, 3, 7, 3],
-  ["G2-01", "Grade 2 Card 01", 2, 9, 5, 4, 4],
-  ["G2-02", "Grade 2 Card 02", 2, 4, 9, 5, 4],
-  ["G2-03", "Grade 2 Card 03", 2, 4, 4, 9, 5],
-  ["G2-04", "Grade 2 Card 04", 2, 5, 4, 4, 9],
-  ["G2-05", "Grade 2 Card 05", 2, 7, 6, 5, 4],
-  ["G2-06", "Grade 2 Card 06", 2, 4, 7, 6, 5],
-  ["G2-07", "Grade 2 Card 07", 2, 5, 4, 7, 6],
-  ["G2-08", "Grade 2 Card 08", 2, 6, 5, 4, 7],
-  ["G2-09", "Grade 2 Card 09", 2, 8, 3, 8, 3],
-  ["G2-10", "Grade 2 Card 10", 2, 3, 8, 3, 8],
-  ["G2-11", "Grade 2 Card 11", 2, 6, 6, 5, 5],
-  ["G2-12", "Grade 2 Card 12", 2, 10, 4, 4, 4],
-  ["G2-13", "Grade 2 Card 13", 2, 6, 5, 5, 5],
-  ["G2-14", "Grade 2 Card 14", 2, 8, 5, 4, 4],
-  ["G2-15", "Grade 2 Card 15", 2, 4, 8, 5, 4],
-  ["G2-16", "Grade 2 Card 16", 2, 4, 4, 8, 5],
-  ["G2-17", "Grade 2 Card 17", 2, 5, 4, 4, 8],
-  ["G2-18", "Grade 2 Card 18", 2, 7, 7, 4, 3],
-  ["G2-19", "Grade 2 Card 19", 2, 3, 7, 7, 4],
-  ["G2-20", "Grade 2 Card 20", 2, 4, 3, 7, 7],
-  ["G3-01", "Grade 3 Card 01", 3, 10, 7, 6, 5],
-  ["G3-02", "Grade 3 Card 02", 3, 5, 10, 7, 6],
-  ["G3-03", "Grade 3 Card 03", 3, 6, 5, 10, 7],
-  ["G3-04", "Grade 3 Card 04", 3, 7, 6, 5, 10],
-  ["G3-05", "Grade 3 Card 05", 3, 9, 7, 6, 5],
-  ["G3-06", "Grade 3 Card 06", 3, 5, 9, 7, 6],
-  ["G3-07", "Grade 3 Card 07", 3, 6, 5, 9, 7],
-  ["G3-08", "Grade 3 Card 08", 3, 7, 6, 5, 9],
-  ["G3-09", "Grade 3 Card 09", 3, 8, 8, 6, 5],
-  ["G3-10", "Grade 3 Card 10", 3, 5, 8, 8, 6],
-  ["G3-11", "Grade 3 Card 11", 3, 6, 5, 8, 8],
-  ["G3-12", "Grade 3 Card 12", 3, 8, 6, 5, 8],
-  ["G3-13", "Grade 3 Card 13", 3, 10, 4, 9, 4],
-  ["G3-14", "Grade 3 Card 14", 3, 4, 10, 4, 9],
-  ["G3-15", "Grade 3 Card 15", 3, 9, 4, 10, 4],
-  ["G3-16", "Grade 3 Card 16", 3, 4, 9, 4, 10],
-  ["G3-17", "Grade 3 Card 17", 3, 7, 7, 7, 6],
-  ["G3-18", "Grade 3 Card 18", 3, 6, 7, 7, 7],
-  ["G3-19", "Grade 3 Card 19", 3, 8, 7, 6, 6],
-  ["G3-20", "Grade 3 Card 20", 3, 6, 8, 7, 6],
-  ["G4-01", "Grade 4 Card 01", 4, 10, 9, 8, 6],
-  ["G4-02", "Grade 4 Card 02", 4, 6, 10, 9, 8],
-  ["G4-03", "Grade 4 Card 03", 4, 8, 6, 10, 9],
-  ["G4-04", "Grade 4 Card 04", 4, 9, 8, 6, 10],
-  ["G4-05", "Grade 4 Card 05", 4, 10, 10, 7, 6],
-  ["G4-06", "Grade 4 Card 06", 4, 6, 10, 10, 7],
-  ["G4-07", "Grade 4 Card 07", 4, 7, 6, 10, 10],
-  ["G4-08", "Grade 4 Card 08", 4, 10, 7, 6, 10],
-  ["G4-09", "Grade 4 Card 09", 4, 9, 9, 8, 7],
-  ["G4-10", "Grade 4 Card 10", 4, 7, 9, 9, 8],
-  ["G4-11", "Grade 4 Card 11", 4, 8, 7, 9, 9],
-  ["G4-12", "Grade 4 Card 12", 4, 9, 8, 7, 9],
-  ["G4-13", "Grade 4 Card 13", 4, 10, 8, 10, 5],
-  ["G4-14", "Grade 4 Card 14", 4, 5, 10, 8, 10],
-  ["G4-15", "Grade 4 Card 15", 4, 10, 5, 10, 8],
-  ["G4-16", "Grade 4 Card 16", 4, 8, 10, 5, 10],
-  ["G4-17", "Grade 4 Card 17", 4, 8, 8, 8, 8],
-  ["G4-18", "Grade 4 Card 18", 4, 10, 9, 7, 6],
-  ["G4-19", "Grade 4 Card 19", 4, 6, 10, 9, 7],
-  ["G4-20", "Grade 4 Card 20", 4, 7, 6, 10, 9],
+  ["G0-01", "薄闇/鍵音", 0, 9, 2, 2, 1],
+  ["G0-02", "駅裏/白息", 0, 1, 9, 2, 2],
+  ["G0-03", "湿った/切符", 0, 2, 1, 9, 2],
+  ["G0-04", "消灯/路地", 0, 2, 2, 1, 9],
+  ["G0-05", "深夜/改札", 0, 6, 3, 3, 2],
+  ["G0-06", "古傷/写真", 0, 2, 6, 3, 3],
+  ["G0-07", "雨傘/忘れ物", 0, 3, 2, 6, 3],
+  ["G0-08", "黒電話/呼出", 0, 3, 3, 2, 6],
+  ["G0-09", "段差/影", 0, 4, 4, 3, 3],
+  ["G0-10", "作業灯/火花", 0, 5, 3, 3, 3],
+  ["G0-11", "赤信号/無音", 0, 3, 5, 3, 3],
+  ["G0-12", "終電/遅延", 0, 3, 3, 5, 3],
+  ["G0-13", "袖口/血痕", 0, 3, 3, 3, 5],
+  ["G0-14", "鍵束/鈍色", 0, 5, 2, 5, 2],
+  ["G0-15", "非常口/青灯", 0, 2, 5, 2, 5],
+  ["G0-16", "地下道/靴音", 0, 7, 2, 3, 2],
+  ["G0-17", "空室/番号", 0, 2, 7, 2, 3],
+  ["G0-18", "窓際/冷気", 0, 3, 2, 7, 2],
+  ["G0-19", "手紙/封印", 0, 2, 3, 2, 7],
+  ["G0-20", "遠雷/予感", 0, 4, 4, 3, 3],
+  ["G1-01", "夜勤/警告", 1, 8, 3, 3, 3],
+  ["G1-02", "廃線/灯り", 1, 3, 8, 3, 3],
+  ["G1-03", "追跡/足音", 1, 3, 3, 8, 3],
+  ["G1-04", "暗証/手帳", 1, 3, 3, 3, 8],
+  ["G1-05", "白線/停止", 1, 6, 4, 4, 3],
+  ["G1-06", "裏口/合図", 1, 3, 6, 4, 4],
+  ["G1-07", "焦げ跡/工具", 1, 4, 3, 6, 4],
+  ["G1-08", "録音/雑音", 1, 4, 4, 3, 6],
+  ["G1-09", "保留音/迷路", 1, 5, 5, 4, 3],
+  ["G1-10", "密室/換気", 1, 3, 5, 5, 4],
+  ["G1-11", "制服/視線", 1, 4, 3, 5, 5],
+  ["G1-12", "残響/階段", 1, 5, 4, 3, 5],
+  ["G1-13", "番号札/裏面", 1, 7, 2, 5, 3],
+  ["G1-14", "細工/針金", 1, 3, 7, 2, 5],
+  ["G1-15", "真夜中/改札", 1, 5, 3, 7, 2],
+  ["G1-16", "冷汗/予定", 1, 2, 5, 3, 7],
+  ["G1-17", "仮眠/夢見", 1, 4, 4, 4, 4],
+  ["G1-18", "未読/通知", 1, 7, 3, 3, 3],
+  ["G1-19", "街灯/点滅", 1, 3, 7, 3, 3],
+  ["G1-20", "始発/沈黙", 1, 3, 3, 7, 3],
+  ["G2-01", "監視/カメラ", 2, 9, 5, 4, 4],
+  ["G2-02", "深層/ログ", 2, 4, 9, 5, 4],
+  ["G2-03", "切断/回線", 2, 4, 4, 9, 5],
+  ["G2-04", "青白い/画面", 2, 5, 4, 4, 9],
+  ["G2-05", "指紋/照合", 2, 7, 6, 5, 4],
+  ["G2-06", "警笛/遠く", 2, 4, 7, 6, 5],
+  ["G2-07", "非常線/突破", 2, 5, 4, 7, 6],
+  ["G2-08", "現場/証言", 2, 6, 5, 4, 7],
+  ["G2-09", "隠し/階段", 2, 8, 3, 8, 3],
+  ["G2-10", "照明/落下", 2, 3, 8, 3, 8],
+  ["G2-11", "合鍵/裏返", 2, 6, 6, 5, 5],
+  ["G2-12", "微熱/診断", 2, 10, 4, 4, 4],
+  ["G2-13", "無人駅/時計", 2, 6, 5, 5, 5],
+  ["G2-14", "路線図/赤丸", 2, 8, 5, 4, 4],
+  ["G2-15", "硝子/亀裂", 2, 4, 8, 5, 4],
+  ["G2-16", "電光/掲示", 2, 4, 4, 8, 5],
+  ["G2-17", "黒服/会釈", 2, 5, 4, 4, 8],
+  ["G2-18", "留守電/再生", 2, 7, 7, 4, 3],
+  ["G2-19", "境界/標識", 2, 3, 7, 7, 4],
+  ["G2-20", "記録/消去", 2, 4, 3, 7, 7],
+  ["G3-01", "逃走/経路", 3, 10, 7, 6, 5],
+  ["G3-02", "偽装/書類", 3, 5, 10, 7, 6],
+  ["G3-03", "金属音/接近", 3, 6, 5, 10, 7],
+  ["G3-04", "逆光/人影", 3, 7, 6, 5, 10],
+  ["G3-05", "施錠/解除", 3, 9, 7, 6, 5],
+  ["G3-06", "白煙/非常", 3, 5, 9, 7, 6],
+  ["G3-07", "制御室/赤灯", 3, 6, 5, 9, 7],
+  ["G3-08", "臨時便/空席", 3, 7, 6, 5, 9],
+  ["G3-09", "暗室/現像", 3, 8, 8, 6, 5],
+  ["G3-10", "送信/失敗", 3, 5, 8, 8, 6],
+  ["G3-11", "振動/床下", 3, 6, 5, 8, 8],
+  ["G3-12", "証拠/封筒", 3, 8, 6, 5, 8],
+  ["G3-13", "無線/応答", 3, 10, 4, 9, 4],
+  ["G3-14", "沈む/ホーム", 3, 4, 10, 4, 9],
+  ["G3-15", "逃げ道/消失", 3, 9, 4, 10, 4],
+  ["G3-16", "鍵穴/発光", 3, 4, 9, 4, 10],
+  ["G3-17", "監査/報告", 3, 7, 7, 7, 6],
+  ["G3-18", "歪んだ/鏡", 3, 6, 7, 7, 7],
+  ["G3-19", "黒幕/近く", 3, 8, 7, 6, 6],
+  ["G3-20", "終点/裏側", 3, 6, 8, 7, 6],
+  ["G4-01", "電脳/門扉", 4, 9, 8, 7, 5],
+  ["G4-02", "虚空/改札", 4, 5, 9, 8, 7],
+  ["G4-03", "断罪/時刻", 4, 7, 5, 9, 8],
+  ["G4-04", "危険/領域", 4, 8, 7, 5, 9],
+  ["G4-05", "極夜/非常線", 4, 9, 9, 6, 5],
+  ["G4-06", "残酷/信号", 4, 5, 9, 9, 6],
+  ["G4-07", "制圧/コード", 4, 6, 5, 9, 9],
+  ["G4-08", "冷徹/追跡", 4, 9, 6, 5, 9],
+  ["G4-09", "無音/急行", 4, 8, 8, 7, 6],
+  ["G4-10", "閉鎖/区画", 4, 6, 8, 8, 7],
+  ["G4-11", "真相/直前", 4, 7, 6, 8, 8],
+  ["G4-12", "漆黒/階層", 4, 8, 7, 6, 8],
+  ["G4-13", "逆転/証明", 4, 9, 7, 9, 4],
+  ["G4-14", "閃光/切札", 4, 4, 9, 7, 9],
+  ["G4-15", "限界/突破", 4, 9, 4, 9, 7],
+  ["G4-16", "密告/回路", 4, 7, 9, 4, 9],
+  ["G4-17", "災厄/番号", 4, 7, 7, 7, 7],
+  ["G4-18", "最後/改札", 4, 9, 8, 6, 5],
+  ["G4-19", "完全/包囲", 4, 5, 9, 8, 6],
+  ["G4-20", "醒める/夢", 4, 6, 5, 9, 8],
 ];
 
 const MODEL_WEIGHTS = {
@@ -247,8 +250,11 @@ const game = {
   currentCharacter: null,
   secret: "",
   guess: "",
+  guessHistory: [],
   matchedDigits: 0,
+  blowDigits: 0,
   grade: 0,
+  guessCompleteReason: "",
   pendingHands: null,
   pendingFirstPlayer: "blue",
   battle: null,
@@ -282,6 +288,7 @@ function onClick(event) {
   if (action === "start-intro") startIntro();
   if (action === "external-link") window.location.href = "https://andleather.official.ec/categories/2110113";
   if (action === "intro-next") advanceIntro();
+  if (action === "go-direction") goDirection(Number(target.dataset.directionIndex));
   if (action === "nav-left") rotateDirection(-1);
   if (action === "nav-right") rotateDirection(1);
   if (action === "talk") startNumberGuess();
@@ -367,7 +374,6 @@ function renderMain() {
     image: direction.image,
     content: `
       ${topbarHtml(`<div class="status-chip">向き：${direction.label}</div>`)}
-      <div class="player-marker" aria-hidden="true"></div>
       <div class="bottom">
         ${dialogueHtml(defeated ? direction.name : "私", text.replace(`${direction.name}：`, ""))}
         <div class="nav-controls">
@@ -383,17 +389,19 @@ function renderMain() {
 
 function renderGuess() {
   const character = game.currentCharacter;
+  const nextAttempt = Math.min(game.guessHistory.length + 1, MAX_GUESS_ATTEMPTS);
+  const dialogueText = game.feedback || character.lines[0];
   app.innerHTML = sceneHtml({
     image: character.image,
     content: `
-      ${topbarHtml(`<div class="status-chip">${character.label}：${character.name}</div>`)}
+      ${topbarHtml(`<div class="status-chip">${character.label}：${character.name}</div><div class="status-chip">挑戦：${nextAttempt}/${MAX_GUESS_ATTEMPTS}</div>`)}
       <div class="bottom">
-        ${dialogueHtml(character.name, character.lines[0])}
+        ${dialogueHtml(character.name, dialogueText)}
         <form id="guess-form" class="guess-form">
           <input class="guess-input" name="guess" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="0000" />
           <button class="command-button" type="submit">答える</button>
         </form>
-        ${game.feedback ? `<div class="battle-message">${escapeHtml(game.feedback)}</div>` : ""}
+        ${guessHistoryHtml()}
       </div>
     `,
   });
@@ -404,13 +412,16 @@ function renderGuess() {
 function renderGuessResult() {
   const character = game.currentCharacter;
   const answerLine = character.lines[1].replace("xxxx", game.secret).replace("XXXX", game.secret);
+  const resultLine = game.guessCompleteReason === "perfect" ? perfectGuessResultLine(character) : answerLine;
+  const resultMessage = `最終回答：${game.guess} / 正解：${game.secret} / ${game.matchedDigits}ヒット、${game.blowDigits}ブロー / カードグレード：${game.grade}`;
   app.innerHTML = sceneHtml({
     image: character.image,
     content: `
-      ${topbarHtml(`<div class="status-chip">一致：${game.matchedDigits}桁</div><div class="status-chip">グレード${game.grade}</div>`)}
+      ${topbarHtml(`<div class="status-chip">${game.matchedDigits}ヒット</div><div class="status-chip">${game.blowDigits}ブロー</div><div class="status-chip">グレード${game.grade}</div>`)}
       <div class="bottom">
-        ${dialogueHtml(character.name, answerLine)}
-        <div class="battle-message">あなたの入力：${escapeHtml(game.guess)} / 正解：${game.secret} / カードグレード：${game.grade}</div>
+        ${dialogueHtml(character.name, resultLine)}
+        ${guessHistoryHtml()}
+        <div class="battle-message">${escapeHtml(resultMessage)}</div>
         <button class="primary-button" data-action="start-battle">カードバトルへ</button>
       </div>
     `,
@@ -424,7 +435,7 @@ function renderBattle() {
   app.innerHTML = sceneHtml({
     image: game.currentCharacter.image,
     content: `
-      ${topbarHtml(`<div class="status-chip">${turnText}</div><div class="status-chip">先攻：${ownerLabel(battle.firstPlayer)}</div>`)}
+      ${topbarHtml(`<button class="surrender-button" data-action="reset-opening">諦める</button><div class="status-chip">${turnText}</div><div class="status-chip">先攻：${ownerLabel(battle.firstPlayer)}</div>`)}
       <div class="bottom battle-shell">
         <div class="battle-message">${escapeHtml(battle.message)}</div>
         <div class="score-row">
@@ -433,13 +444,13 @@ function renderBattle() {
           <div class="score-box">赤 ${score.red}</div>
         </div>
         <div class="hand-panel">
-          <div class="hand-title">あなたの手札</div>
-          <div class="hand-list">${handHtml(battle.blueHand, "blue", battle.turn === "blue")}</div>
+          <div class="hand-title">${game.currentCharacter.name}の手札</div>
+          <div class="hand-list">${handHtml(battle.redHand, "red", false)}</div>
         </div>
         <div class="battle-board">${boardHtml(battle)}</div>
         <div class="hand-panel">
-          <div class="hand-title">${game.currentCharacter.name}の手札</div>
-          <div class="hand-list">${handHtml(battle.redHand, "red", false)}</div>
+          <div class="hand-title">あなたの手札</div>
+          <div class="hand-list">${handHtml(battle.blueHand, "blue", battle.turn === "blue")}</div>
         </div>
       </div>
     `,
@@ -511,6 +522,12 @@ function rotateDirection(delta) {
   render();
 }
 
+function goDirection(index) {
+  if (!Number.isInteger(index) || index < 0 || index >= DIRECTIONS.length) return;
+  game.directionIndex = index;
+  render();
+}
+
 function startNumberGuess() {
   const direction = currentDirection();
   if (game.defeated.has(direction.id)) {
@@ -520,6 +537,13 @@ function startNumberGuess() {
   }
   game.currentCharacter = direction;
   game.secret = randomFourDigits();
+  game.guess = "";
+  game.guessHistory = [];
+  game.matchedDigits = 0;
+  game.blowDigits = 0;
+  game.grade = 0;
+  game.guessCompleteReason = "";
+  game.pendingHands = null;
   game.feedback = "";
   game.screen = "guess";
   render();
@@ -531,9 +555,33 @@ function submitGuess(value) {
     renderGuess();
     return;
   }
+
+  const result = scoreHitAndBlow(game.secret, value);
+  const attempt = game.guessHistory.length + 1;
   game.guess = value;
-  game.matchedDigits = scoreGuess(game.secret, value);
+  game.matchedDigits = result.hits;
+  game.blowDigits = result.blows;
+  game.guessHistory.push({ attempt, value, hits: result.hits, blows: result.blows });
+
+  if (result.hits === 4) {
+    game.feedback = perfectGuessResultLine(game.currentCharacter);
+    completeNumberGuess("perfect");
+    return;
+  }
+
+  if (game.guessHistory.length >= MAX_GUESS_ATTEMPTS) {
+    completeNumberGuess("attempts");
+    return;
+  }
+
+  game.feedback = hitAndBlowLine(game.currentCharacter, result, MAX_GUESS_ATTEMPTS - game.guessHistory.length);
+  renderGuess();
+}
+
+function completeNumberGuess(reason) {
+  // カードの強さは最後に出たヒット数で決まります。途中4ヒットなら必ずグレード4です。
   game.grade = game.matchedDigits;
+  game.guessCompleteReason = reason;
   game.pendingHands = {
     blue: instantiateHand(drawPlayerHand(game.grade), "blue"),
     red: instantiateHand(drawCpuHand(), "red"),
@@ -578,6 +626,13 @@ function resetToOpening() {
   game.directionIndex = 0;
   game.defeated = new Set();
   game.currentCharacter = null;
+  game.guess = "";
+  game.guessHistory = [];
+  game.matchedDigits = 0;
+  game.blowDigits = 0;
+  game.grade = 0;
+  game.guessCompleteReason = "";
+  game.pendingHands = null;
   game.battle = null;
   game.outcome = null;
   game.feedback = "";
@@ -593,7 +648,7 @@ function selectPlayerCard(index) {
   const battle = game.battle;
   if (!battle || battle.turn !== "blue") return;
   battle.selectedHandIndex = index;
-  battle.message = `${battle.blueHand[index].name}を選んだ。置く場所を選んで。`;
+  battle.message = `${cardReadableName(battle.blueHand[index])}を選んだ。置く場所を選んで。`;
   render();
 }
 
@@ -636,7 +691,7 @@ function applyMove(battle, move) {
   }
 
   battle.turn = opponent(move.owner);
-  battle.message = `${ownerLabel(move.owner)}が${card.name}を置いた。${captured ? `${captured}枚ひっくり返した。` : "ひっくり返せなかった。"}`;
+  battle.message = `${ownerLabel(move.owner)}が${cardReadableName(card)}を置いた。${captured ? `${captured}枚ひっくり返した。` : "ひっくり返せなかった。"}`;
 }
 
 function finishBattle() {
@@ -890,11 +945,30 @@ function instantiateHand(cards, owner) {
 }
 
 function scoreGuess(secret, guess) {
-  let score = 0;
+  return scoreHitAndBlow(secret, guess).hits;
+}
+
+function scoreHitAndBlow(secret, guess) {
+  // ヒットは「数字も位置も一致」、ブローは「数字だけ一致」。同じ数字の重複も数え過ぎないようにします。
+  let hits = 0;
+  const secretRest = {};
+  const guessRest = {};
+
   for (let index = 0; index < 4; index += 1) {
-    if (secret[index] === guess[index]) score += 1;
+    if (secret[index] === guess[index]) {
+      hits += 1;
+    } else {
+      secretRest[secret[index]] = (secretRest[secret[index]] || 0) + 1;
+      guessRest[guess[index]] = (guessRest[guess[index]] || 0) + 1;
+    }
   }
-  return score;
+
+  let blows = 0;
+  for (const digit of Object.keys(guessRest)) {
+    blows += Math.min(guessRest[digit], secretRest[digit] || 0);
+  }
+
+  return { hits, blows };
 }
 
 function randomFourDigits() {
@@ -966,12 +1040,60 @@ function dialogueHtml(speaker, text) {
   `;
 }
 
+function guessHistoryHtml() {
+  if (!game.guessHistory.length) return "";
+  return `
+    <div class="guess-history">
+      ${game.guessHistory
+        .map(
+          (record) => `
+            <div class="guess-history-row">
+              <span>${record.attempt}回目</span>
+              <span>${escapeHtml(record.value)}</span>
+              <span>${record.hits}ヒット / ${record.blows}ブロー</span>
+            </div>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function hitAndBlowLine(character, result, remainingAttempts) {
+  // 3回目までは答えを明かさず、ヒット数とブロー数だけでプレイヤーを誘導します。
+  const scoreText = `${result.hits}ヒット、${result.blows}ブロー`;
+  if (character.id === "south") {
+    return `${scoreText}だぜ。切り口は悪くないな。あと${remainingAttempts}回。`;
+  }
+  if (character.id === "west") {
+    return `${scoreText}だ。意識はまだあるな、あと${remainingAttempts}回。`;
+  }
+  if (character.id === "east") {
+    return `${scoreText}。音が少し近づいた。あと${remainingAttempts}回。`;
+  }
+  return `${scoreText}。鍵穴が少し動いたよ。あと${remainingAttempts}回。`;
+}
+
+function perfectGuessResultLine(character) {
+  // 奇跡の4ヒット時は数字当てを即終了し、最高グレードの手札でカードバトルに進みます。
+  if (character.id === "south") {
+    return "4ヒット。うわ、そこまでピタッと当てる？最高グレードで勝負だぜ。";
+  }
+  if (character.id === "west") {
+    return "4ヒットだ。計器より正確じゃないか。最高グレードでいくぞ。";
+  }
+  if (character.id === "east") {
+    return "4ヒット。今の音、ぜんぶ重なった。最高グレードだよ。";
+  }
+  return "4ヒット。鍵番号、完全に思い出したんだね。最高グレードだよ。";
+}
+
 function progressHtml() {
   return `
     <div class="progress-list">
       ${DIRECTIONS.map(
-        (direction) =>
-          `<div class="progress-item${game.defeated.has(direction.id) ? " done" : ""}">${escapeHtml(direction.label)}</div>`,
+        (direction, index) =>
+          `<button class="progress-item${game.defeated.has(direction.id) ? " done" : ""}${game.directionIndex === index ? " current" : ""}" data-action="go-direction" data-direction-index="${index}">${escapeHtml(direction.label)}</button>`,
       ).join("")}
     </div>
   `;
@@ -1014,8 +1136,22 @@ function cardInnerHtml(card) {
     <span class="card-value right">${card.right}</span>
     <span class="card-value bottom">${card.bottom}</span>
     <span class="card-value left">${card.left}</span>
-    <span class="card-name">${escapeHtml(card.name)}</span>
+    <span class="card-name">${cardNameHtml(card.name)}</span>
   `;
+}
+
+function cardNameHtml(name) {
+  // カード中央の名前は「/」区切りを行として扱い、最大3行・各行4文字までに抑えます。
+  return String(name)
+    .split("/")
+    .slice(0, 3)
+    .map((line) => `<span>${escapeHtml(line.slice(0, 4))}</span>`)
+    .join("");
+}
+
+function cardReadableName(card) {
+  // メッセージ欄では改行用の「/」を中点に変えて、読みやすい1行名にします。
+  return String(card.name).split("/").filter(Boolean).join("・");
 }
 
 function escapeHtml(value) {

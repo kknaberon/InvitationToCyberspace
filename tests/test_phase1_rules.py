@@ -50,6 +50,15 @@ class CardPoolTests(unittest.TestCase):
         self.assertEqual(len(cpu_hand), 5)
         self.assertEqual(len({card.card_id for card in cpu_hand}), 5)
 
+    def test_card_names_are_short_multiline_labels(self) -> None:
+        pool = build_default_card_pool()
+        for card in pool.cards:
+            lines = card.name.split("/")
+            self.assertLessEqual(len(lines), 3)
+            for line in lines:
+                self.assertGreater(len(line), 0)
+                self.assertLessEqual(len(line), 4)
+
 
 class BattleTests(unittest.TestCase):
     def test_capture_adjacent_opponent_card(self) -> None:

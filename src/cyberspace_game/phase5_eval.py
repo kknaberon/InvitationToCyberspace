@@ -171,6 +171,54 @@ class Phase5EvaluationSummary:
         return self.learned_second_wins / self.learned_second_games
 
 
+@dataclass(frozen=True, slots=True)
+class Phase5SelfPlaySummary:
+    """学習済みAI同士で戦わせたときの集計。"""
+
+    # games: 対戦数です。
+    games: int
+
+    # blue_wins/red_wins/draws: 青AI勝ち、赤AI勝ち、引き分けの回数です。
+    blue_wins: int
+    red_wins: int
+    draws: int
+
+    # blue_first_games/blue_first_wins: 青AIが先攻だった試合数と勝利数です。
+    blue_first_games: int
+    blue_first_wins: int
+
+    # blue_second_games/blue_second_wins: 青AIが後攻だった試合数と勝利数です。
+    blue_second_games: int
+    blue_second_wins: int
+
+    # grade_counts: 青側の数当てグレードが何回出たかです。
+    grade_counts: dict[int, int]
+
+    @property
+    def blue_win_rate(self) -> float:
+        """青AIの勝率です。"""
+
+        return self.blue_wins / self.games if self.games else 0.0
+
+    @property
+    def red_win_rate(self) -> float:
+        """赤AIの勝率です。"""
+
+        return self.red_wins / self.games if self.games else 0.0
+
+    @property
+    def draw_rate(self) -> float:
+        """引き分け率です。"""
+
+        return self.draws / self.games if self.games else 0.0
+
+    @property
+    def blue_non_loss_rate(self) -> float:
+        """青AIが勝つか引き分けた割合です。"""
+
+        return (self.blue_wins + self.draws) / self.games if self.games else 0.0
+
+
 def evaluate_model_against_random(
     model_path: str | Path,
     games: int = 1_000,
@@ -210,6 +258,71 @@ def evaluate_model_against_random(
         results.append(result)
 
     return summarize_phase5_results(results, learned_owner), results
+
+
+def evaluate_model_self_play(
+    model_path: str | Path,
+    games: int = 1_000,
+    seed: int | None = None,
+    pool: CardPool | None = None,
+    tactical_weight: float = 0.8,
+    reply_penalty_weight: float = 0.25,
+) -> Phase5SelfPlaySummary:
+    """青も赤も同じ学習済みAIで対戦させ、青側の勝率を確認します。"""
+
+    if games < 1:
+        raise ValueError("games must be at least 1")
+
+    model = LinearMoveModel.load(model_path)
+    rng = random.Random(seed)
+    pool = pool or build_default_card_pool()
+
+    blue_wins = 0
+    red_wins = 0
+    draws = 0
+    blue_first_games = 0
+    blue_first_wins = 0
+    blue_second_games = 0
+    blue_second_wins = 0
+    grade_counts = {grade: 0 for grade in range(5)}
+
+    for _ in range(games):
+        result = run_model_self_play_battle(
+            model=model,
+            rng=rng,
+            pool=pool,
+            tactical_weight=tactical_weight,
+            reply_penalty_weight=reply_penalty_weight,
+        )
+        grade_counts[result.player_grade] += 1
+
+        if result.first_player is Owner.BLUE:
+            blue_first_games += 1
+        else:
+            blue_second_games += 1
+
+        if result.winner is Owner.BLUE:
+            blue_wins += 1
+            if result.first_player is Owner.BLUE:
+                blue_first_wins += 1
+            else:
+                blue_second_wins += 1
+        elif result.winner is Owner.RED:
+            red_wins += 1
+        else:
+            draws += 1
+
+    return Phase5SelfPlaySummary(
+        games=games,
+        blue_wins=blue_wins,
+        red_wins=red_wins,
+        draws=draws,
+        blue_first_games=blue_first_games,
+        blue_first_wins=blue_first_wins,
+        blue_second_games=blue_second_games,
+        blue_second_wins=blue_second_wins,
+        grade_counts=grade_counts,
+    )
 
 
 def run_model_vs_random_battle(
@@ -271,6 +384,60 @@ def run_model_vs_random_battle(
     return Phase5BattleResult(
         battle_index=battle_index,
         learned_owner=learned_owner,
+        first_player=first_player,
+        player_grade=guess_result.grade,
+        winner=state.winner(),
+        blue_score=scores[Owner.BLUE],
+        red_score=scores[Owner.RED],
+        moves_played=state.move_count,
+    )
+
+
+def run_model_self_play_battle(
+    model: LinearMoveModel,
+    rng: random.Random,
+    pool: CardPool | None = None,
+    tactical_weight: float = 0.8,
+    reply_penalty_weight: float = 0.25,
+) -> Phase5BattleResult:
+    """青も赤も同じ学習済みAIで1戦実行します。"""
+
+    pool = pool or build_default_card_pool()
+    guess = f"{rng.randrange(10_000):04d}"
+    guess_result = resolve_number_guess(guess=guess, rng=rng)
+    blue_hand = pool.draw_player_hand(guess_result.grade, rng)
+    red_hand = pool.draw_cpu_hand(rng)
+    first_player = rng.choice([Owner.BLUE, Owner.RED])
+    state = BattleState.start(
+        blue_hand=blue_hand,
+        red_hand=red_hand,
+        first_player=first_player,
+        rng=rng,
+    )
+
+    agents = {
+        Owner.BLUE: ModelAgent(
+            owner=Owner.BLUE,
+            model=model,
+            tactical_weight=tactical_weight,
+            reply_penalty_weight=reply_penalty_weight,
+        ),
+        Owner.RED: ModelAgent(
+            owner=Owner.RED,
+            model=model,
+            tactical_weight=tactical_weight,
+            reply_penalty_weight=reply_penalty_weight,
+        ),
+    }
+
+    while not state.is_over:
+        move = agents[state.turn].choose_move(state, rng)
+        state = state.apply_move(move)
+
+    scores = state.score()
+    return Phase5BattleResult(
+        battle_index=0,
+        learned_owner=Owner.BLUE,
         first_player=first_player,
         player_grade=guess_result.grade,
         winner=state.winner(),

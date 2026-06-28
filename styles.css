@@ -141,7 +141,8 @@ button {
 }
 
 .status-chip,
-.icon-button {
+.icon-button,
+.surrender-button {
   min-height: 34px;
   border: 1px solid var(--line);
   background: rgba(0, 0, 0, 0.45);
@@ -162,6 +163,15 @@ button {
 .icon-button {
   width: 38px;
   border-radius: 50%;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.surrender-button {
+  min-height: 28px;
+  border-radius: 6px;
+  padding: 0 8px;
+  font-size: 11px;
   cursor: pointer;
   pointer-events: auto;
 }
@@ -269,6 +279,7 @@ button {
   background: rgba(0, 0, 0, 0.38);
   color: var(--muted);
   font-size: 12px;
+  cursor: pointer;
 }
 
 .progress-item.done {
@@ -277,39 +288,10 @@ button {
   border-color: rgba(255, 255, 255, 0.35);
 }
 
-.player-marker {
-  position: absolute;
-  left: 50%;
-  bottom: 29%;
-  width: 30px;
-  height: 48px;
-  transform: translateX(-50%);
-  z-index: 1;
-  filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.65));
-  opacity: 0.88;
-}
-
-.player-marker::before,
-.player-marker::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(247, 251, 255, 0.9);
-}
-
-.player-marker::before {
-  top: 0;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-}
-
-.player-marker::after {
-  top: 18px;
-  width: 24px;
-  height: 30px;
-  border-radius: 14px 14px 6px 6px;
+.progress-item.current {
+  color: var(--ink);
+  border-color: rgba(255, 209, 102, 0.72);
+  background: rgba(255, 209, 102, 0.18);
 }
 
 .guess-form {
@@ -331,9 +313,34 @@ button {
   letter-spacing: 0;
 }
 
+.guess-history {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.guess-history-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(7, 16, 22, 0.72);
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.guess-history-row span:nth-child(2) {
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 15px;
+}
+
 .battle-shell {
   display: grid;
-  gap: 8px;
+  gap: 7px;
 }
 
 .battle-message {
@@ -364,21 +371,24 @@ button {
 }
 
 .battle-board {
-  width: min(100%, 390px);
+  width: clamp(238px, 68vw, 310px);
   aspect-ratio: 1;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 5px;
+  flex: 0 0 auto;
 }
 
 .cell {
   min-width: 0;
+  min-height: 0;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.07);
   padding: 4px;
   cursor: pointer;
+  overflow: hidden;
 }
 
 .cell:disabled {
@@ -423,6 +433,11 @@ button {
   overflow: hidden;
 }
 
+.cell .card-face {
+  height: 100%;
+  aspect-ratio: auto;
+}
+
 .card-button {
   cursor: pointer;
 }
@@ -446,13 +461,21 @@ button {
 
 .card-name {
   position: absolute;
-  inset: 37% 6px auto;
+  inset: 33% 6px auto;
+  display: grid;
+  gap: 1px;
+  place-items: center;
   text-align: center;
-  font-size: clamp(8px, 2.2vw, 11px);
-  line-height: 1.15;
+  font-size: clamp(8px, 2vw, 10px);
+  line-height: 1.05;
   color: var(--ink);
   word-break: keep-all;
   overflow: hidden;
+}
+
+.card-name span {
+  display: block;
+  max-width: 100%;
 }
 
 .card-value {
@@ -534,8 +557,8 @@ button {
   }
 
   .battle-shell {
-    grid-template-columns: 1fr minmax(320px, 390px) 1fr;
-    align-items: end;
+    grid-template-columns: 1fr minmax(300px, 340px) 1fr;
+    align-items: center;
   }
 
   .battle-message,
@@ -559,7 +582,7 @@ button {
   }
 
   .battle-board {
-    width: min(78vw, 310px);
+    width: clamp(210px, 58vw, 268px);
   }
 
   .card-value {

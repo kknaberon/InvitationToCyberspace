@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Sequence
 
 from .battle import Owner
-from .phase5_eval import evaluate_model_against_random
+from .phase5_eval import evaluate_model_against_random, evaluate_model_self_play
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -37,6 +37,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="Side controlled by the trained model.",
     )
 
+    # --opponent-ai: ランダムAIと戦うか、同じ学習済みAI同士で戦うかです。
+    parser.add_argument(
+        "--opponent-ai",
+        choices=["random", "model"],
+        default="random",
+        help="Opponent type. Use 'model' to measure blue model AI against red model AI.",
+    )
+
     # --tactical-weight: モデル点に混ぜる盤面評価の強さです。
     parser.add_argument(
         "--tactical-weight",
@@ -53,6 +61,32 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="How strongly the model avoids the opponent's best immediate reply.",
     )
     args = parser.parse_args(argv)
+
+    if args.opponent_ai == "model":
+        summary = evaluate_model_self_play(
+            model_path=Path(args.model),
+            games=args.games,
+            seed=args.seed,
+            tactical_weight=args.tactical_weight,
+            reply_penalty_weight=args.reply_penalty_weight,
+        )
+        print(f"Games: {summary.games}")
+        print(f"Opponent AI: model")
+        print(f"Tactical weight: {args.tactical_weight}")
+        print(f"Reply penalty weight: {args.reply_penalty_weight}")
+        print(f"Blue wins: {summary.blue_wins} ({summary.blue_win_rate:.2%})")
+        print(f"Red wins: {summary.red_wins} ({summary.red_win_rate:.2%})")
+        print(f"Draws: {summary.draws} ({summary.draw_rate:.2%})")
+        print(f"Blue non-loss: {summary.blue_wins + summary.draws} ({summary.blue_non_loss_rate:.2%})")
+        print("")
+        print("Blue first/second:")
+        print(f"  First: {summary.blue_first_wins}/{summary.blue_first_games}")
+        print(f"  Second: {summary.blue_second_wins}/{summary.blue_second_games}")
+        print("")
+        print("Blue player grade counts:")
+        for grade, count in summary.grade_counts.items():
+            print(f"  Grade {grade}: {count}")
+        return 0
 
     learned_owner = Owner(args.learned_owner)
     summary, _results = evaluate_model_against_random(

@@ -17,6 +17,7 @@ from cyberspace_game.phase4_ml import LinearMoveModel, generate_teacher_examples
 from cyberspace_game.phase5_eval import (
     ModelAgent,
     evaluate_model_against_random,
+    evaluate_model_self_play,
     run_model_vs_random_battle,
 )
 
@@ -87,6 +88,24 @@ class Phase5EvaluationTests(unittest.TestCase):
 
         self.assertEqual(summary.learned_owner, Owner.RED)
         self.assertEqual(summary.games, 10)
+
+    def test_model_self_play_summary_counts_match_game_total(self) -> None:
+        model = self._create_tiny_model()
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            model_path = Path(tmp_dir) / "model.json"
+            model.save(model_path)
+
+            summary = evaluate_model_self_play(
+                model_path=model_path,
+                games=10,
+                seed=9,
+            )
+
+        self.assertEqual(summary.games, 10)
+        self.assertEqual(summary.blue_wins + summary.red_wins + summary.draws, 10)
+        self.assertEqual(summary.blue_first_games + summary.blue_second_games, 10)
+        self.assertEqual(sum(summary.grade_counts.values()), 10)
 
 
 if __name__ == "__main__":
