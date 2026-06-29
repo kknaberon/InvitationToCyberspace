@@ -160,6 +160,12 @@ button {
   letter-spacing: 0;
 }
 
+.debug-chip {
+  border-color: rgba(255, 209, 102, 0.85);
+  background: rgba(255, 209, 102, 0.2);
+  color: var(--gold);
+}
+
 .icon-button {
   width: 38px;
   border-radius: 50%;
@@ -352,6 +358,18 @@ button {
   line-height: 1.45;
   font-size: 13px;
   box-shadow: var(--shadow);
+}
+
+.battle-card-name {
+  font-weight: 900;
+}
+
+.battle-card-name.blue {
+  color: var(--blue);
+}
+
+.battle-card-name.red {
+  color: var(--red);
 }
 
 .score-row {

@@ -6,6 +6,7 @@ const MUSIC_PATH = "Music/";
 const ASSETS = {
   images: {
     opening: `${IMAGE_PATH}OP.webp`,
+    dupontTrain: `${IMAGE_PATH}Dupont_Train.webp`,
     introClosed: `${IMAGE_PATH}Intro_ClosingCrossingGate.webp`,
     introSouth: `${IMAGE_PATH}Intro_To_South.webp`,
     introOpen: `${IMAGE_PATH}Intro_OpeningCrossingGate.webp`,
@@ -21,8 +22,15 @@ const ASSETS = {
   },
 };
 
+const DEFAULT_MUSIC_VOLUME = 0.62;
+const QUIET_MUSIC_VOLUME = DEFAULT_MUSIC_VOLUME * 0.8;
+const ENDING_EXIT_URL = "https://x.com/te_hen1919810";
+
 // 数字当ては最大3回。途中で4ヒットなら、その場で最高グレードを確定します。
 const MAX_GUESS_ATTEMPTS = 3;
+
+// デバッグ用チート表示です。公開前は false にするか、この行をコメントアウトしてください。
+const DEBUG_SHOW_SECRET_NUMBER = true;
 
 const DIRECTIONS = [
   {
@@ -31,7 +39,7 @@ const DIRECTIONS = [
     image: ASSETS.images.north,
     name: "アメカジさん",
     lines: [
-      "まゆみちゃん。自転車の鍵の番号なんだっけ？",
+      "まゆみちゃん。あんたの自転車の鍵の番号なんだっけ？",
       "xxxxじゃなかった？",
       "自転車の鍵開けておいたよ！",
       "自転車借りていくね。",
@@ -45,7 +53,7 @@ const DIRECTIONS = [
     lines: [
       "１、３、５、７・・・綺麗な音。あなたの音は？",
       "xxxxの方が綺麗だよ。",
-      "ふふふ。",
+      "素敵な音楽だったね。",
       "あなたも上に乗って。",
     ],
   },
@@ -55,9 +63,9 @@ const DIRECTIONS = [
     image: ASSETS.images.south,
     name: "美容師",
     lines: [
-      "オレ美容師だけど、0000から9999の間でオレの好きな数字当ててみて。",
+      "オレのケー番の下４桁当ててみて。",
       "xxxxだよ。",
-      "２か月後に来てください。",
+      "申し訳ございませんでした。２か月後に来てください。",
       "逃がさねぇ！！",
     ],
   },
@@ -69,7 +77,7 @@ const DIRECTIONS = [
     lines: [
       "おい！大丈夫か？西暦何年か答えてみろ！",
       "XXXX年だよ！",
-      "大丈夫か？",
+      "やるじゃねぇか！！",
       "顔色が悪いぞ。",
     ],
   },
@@ -83,7 +91,7 @@ const INTRO_STEPS = [
   {
     image: ASSETS.images.introOpen,
     speaker: "私",
-    text: "（カットだけで８千円もする美容室なのに、狂ってる・・・逃げなきゃ！）",
+    text: "（カットだけで８千円もする美容室だったのに、狂ってる・・・逃げなきゃ！）",
   },
 ];
 
@@ -93,104 +101,104 @@ const ENDING_STEPS = [
 ];
 
 const CARD_DEFINITIONS = [
-  ["G0-01", "薄闇/鍵音", 0, 9, 2, 2, 1],
-  ["G0-02", "駅裏/白息", 0, 1, 9, 2, 2],
+  ["G0-01", "薄闇の/鍵音", 0, 9, 2, 2, 1],
+  ["G0-02", "駅の/裏出口", 0, 1, 9, 2, 2],
   ["G0-03", "湿った/切符", 0, 2, 1, 9, 2],
-  ["G0-04", "消灯/路地", 0, 2, 2, 1, 9],
-  ["G0-05", "深夜/改札", 0, 6, 3, 3, 2],
-  ["G0-06", "古傷/写真", 0, 2, 6, 3, 3],
-  ["G0-07", "雨傘/忘れ物", 0, 3, 2, 6, 3],
-  ["G0-08", "黒電話/呼出", 0, 3, 3, 2, 6],
-  ["G0-09", "段差/影", 0, 4, 4, 3, 3],
-  ["G0-10", "作業灯/火花", 0, 5, 3, 3, 3],
-  ["G0-11", "赤信号/無音", 0, 3, 5, 3, 3],
-  ["G0-12", "終電/遅延", 0, 3, 3, 5, 3],
-  ["G0-13", "袖口/血痕", 0, 3, 3, 3, 5],
-  ["G0-14", "鍵束/鈍色", 0, 5, 2, 5, 2],
-  ["G0-15", "非常口/青灯", 0, 2, 5, 2, 5],
-  ["G0-16", "地下道/靴音", 0, 7, 2, 3, 2],
-  ["G0-17", "空室/番号", 0, 2, 7, 2, 3],
-  ["G0-18", "窓際/冷気", 0, 3, 2, 7, 2],
-  ["G0-19", "手紙/封印", 0, 2, 3, 2, 7],
-  ["G0-20", "遠雷/予感", 0, 4, 4, 3, 3],
-  ["G1-01", "夜勤/警告", 1, 8, 3, 3, 3],
-  ["G1-02", "廃線/灯り", 1, 3, 8, 3, 3],
-  ["G1-03", "追跡/足音", 1, 3, 3, 8, 3],
-  ["G1-04", "暗証/手帳", 1, 3, 3, 3, 8],
-  ["G1-05", "白線/停止", 1, 6, 4, 4, 3],
+  ["G0-04", "消灯した/路地", 0, 2, 2, 1, 9],
+  ["G0-05", "深夜の/改札", 0, 6, 3, 3, 2],
+  ["G0-06", "古傷の/写真", 0, 2, 6, 3, 3],
+  ["G0-07", "忘れられた/雨傘", 0, 3, 2, 6, 3],
+  ["G0-08", "黒電話の/呼出", 0, 3, 3, 2, 6],
+  ["G0-09", "段差の/影", 0, 4, 4, 3, 3],
+  ["G0-10", "作業灯の/火花", 0, 5, 3, 3, 3],
+  ["G0-11", "赤信号の/無音", 0, 3, 5, 3, 3],
+  ["G0-12", "終電の/遅延", 0, 3, 3, 5, 3],
+  ["G0-13", "袖口の/血痕", 0, 3, 3, 3, 5],
+  ["G0-14", "鍵束の/鈍色", 0, 5, 2, 5, 2],
+  ["G0-15", "非常口の/青灯", 0, 2, 5, 2, 5],
+  ["G0-16", "地下道の/靴音", 0, 7, 2, 3, 2],
+  ["G0-17", "死者を/呼ぶ音", 0, 2, 7, 2, 3],
+  ["G0-18", "窓際の/冷気", 0, 3, 2, 7, 2],
+  ["G0-19", "封印/手紙", 0, 2, 3, 2, 7],
+  ["G0-20", "サンダー/力学", 0, 4, 4, 3, 3],
+  ["G1-01", "少しの/警告", 1, 8, 3, 3, 3],
+  ["G1-02", "廃線の/灯り", 1, 3, 8, 3, 3],
+  ["G1-03", "追跡の/足音", 1, 3, 3, 8, 3],
+  ["G1-04", "地獄への/誘い", 1, 3, 3, 3, 8],
+  ["G1-05", "最後の/白線", 1, 6, 4, 4, 3],
   ["G1-06", "裏口/合図", 1, 3, 6, 4, 4],
-  ["G1-07", "焦げ跡/工具", 1, 4, 3, 6, 4],
-  ["G1-08", "録音/雑音", 1, 4, 4, 3, 6],
-  ["G1-09", "保留音/迷路", 1, 5, 5, 4, 3],
-  ["G1-10", "密室/換気", 1, 3, 5, 5, 4],
-  ["G1-11", "制服/視線", 1, 4, 3, 5, 5],
-  ["G1-12", "残響/階段", 1, 5, 4, 3, 5],
-  ["G1-13", "番号札/裏面", 1, 7, 2, 5, 3],
-  ["G1-14", "細工/針金", 1, 3, 7, 2, 5],
-  ["G1-15", "真夜中/改札", 1, 5, 3, 7, 2],
-  ["G1-16", "冷汗/予定", 1, 2, 5, 3, 7],
+  ["G1-07", "焦げた/工具", 1, 4, 3, 6, 4],
+  ["G1-08", "静寂な/雑音", 1, 4, 4, 3, 6],
+  ["G1-09", "あの人の/影", 1, 5, 5, 4, 3],
+  ["G1-10", "一斉の/叫び", 1, 3, 5, 5, 4],
+  ["G1-11", "デビル/サイト", 1, 4, 3, 5, 5],
+  ["G1-12", "残響/記憶", 1, 5, 4, 3, 5],
+  ["G1-13", "コインの/裏面", 1, 7, 2, 5, 3],
+  ["G1-14", "細工された/針金", 1, 3, 7, 2, 5],
+  ["G1-15", "開かずの/改札", 1, 5, 3, 7, 2],
+  ["G1-16", "あの/予定", 1, 2, 5, 3, 7],
   ["G1-17", "仮眠/夢見", 1, 4, 4, 4, 4],
-  ["G1-18", "未読/通知", 1, 7, 3, 3, 3],
+  ["G1-18", "未読の/手紙", 1, 7, 3, 3, 3],
   ["G1-19", "街灯/点滅", 1, 3, 7, 3, 3],
-  ["G1-20", "始発/沈黙", 1, 3, 3, 7, 3],
+  ["G1-20", "イリーガル/デビル", 1, 3, 3, 7, 3],
   ["G2-01", "監視/カメラ", 2, 9, 5, 4, 4],
   ["G2-02", "深層/ログ", 2, 4, 9, 5, 4],
   ["G2-03", "切断/回線", 2, 4, 4, 9, 5],
   ["G2-04", "青白い/画面", 2, 5, 4, 4, 9],
   ["G2-05", "指紋/照合", 2, 7, 6, 5, 4],
   ["G2-06", "警笛/遠く", 2, 4, 7, 6, 5],
-  ["G2-07", "非常線/突破", 2, 5, 4, 7, 6],
-  ["G2-08", "現場/証言", 2, 6, 5, 4, 7],
+  ["G2-07", "非常/突破", 2, 5, 4, 7, 6],
+  ["G2-08", "現場の/血", 2, 6, 5, 4, 7],
   ["G2-09", "隠し/階段", 2, 8, 3, 8, 3],
   ["G2-10", "照明/落下", 2, 3, 8, 3, 8],
-  ["G2-11", "合鍵/裏返", 2, 6, 6, 5, 5],
+  ["G2-11", "合鍵/コピー", 2, 6, 6, 5, 5],
   ["G2-12", "微熱/診断", 2, 10, 4, 4, 4],
   ["G2-13", "無人駅/時計", 2, 6, 5, 5, 5],
   ["G2-14", "路線図/赤丸", 2, 8, 5, 4, 4],
-  ["G2-15", "硝子/亀裂", 2, 4, 8, 5, 4],
+  ["G2-15", "硝子の/亀裂", 2, 4, 8, 5, 4],
   ["G2-16", "電光/掲示", 2, 4, 4, 8, 5],
-  ["G2-17", "黒服/会釈", 2, 5, 4, 4, 8],
-  ["G2-18", "留守電/再生", 2, 7, 7, 4, 3],
-  ["G2-19", "境界/標識", 2, 3, 7, 7, 4],
+  ["G2-17", "黒服/フィッシュ", 2, 5, 4, 4, 8],
+  ["G2-18", "留守電/逆再生", 2, 7, 7, 4, 3],
+  ["G2-19", "禁止された/領域", 2, 3, 7, 7, 4],
   ["G2-20", "記録/消去", 2, 4, 3, 7, 7],
   ["G3-01", "逃走/経路", 3, 10, 7, 6, 5],
   ["G3-02", "偽装/書類", 3, 5, 10, 7, 6],
-  ["G3-03", "金属音/接近", 3, 6, 5, 10, 7],
-  ["G3-04", "逆光/人影", 3, 7, 6, 5, 10],
+  ["G3-03", "鈍い/金属音", 3, 6, 5, 10, 7],
+  ["G3-04", "逆光の/人影", 3, 7, 6, 5, 10],
   ["G3-05", "施錠/解除", 3, 9, 7, 6, 5],
-  ["G3-06", "白煙/非常", 3, 5, 9, 7, 6],
-  ["G3-07", "制御室/赤灯", 3, 6, 5, 9, 7],
-  ["G3-08", "臨時便/空席", 3, 7, 6, 5, 9],
-  ["G3-09", "暗室/現像", 3, 8, 8, 6, 5],
+  ["G3-06", "白煙/の残像", 3, 5, 9, 7, 6],
+  ["G3-07", "制御室/の赤灯", 3, 6, 5, 9, 7],
+  ["G3-08", "空席の/列車", 3, 7, 6, 5, 9],
+  ["G3-09", "心霊/現像", 3, 8, 8, 6, 5],
   ["G3-10", "送信/失敗", 3, 5, 8, 8, 6],
-  ["G3-11", "振動/床下", 3, 6, 5, 8, 8],
-  ["G3-12", "証拠/封筒", 3, 8, 6, 5, 8],
-  ["G3-13", "無線/応答", 3, 10, 4, 9, 4],
+  ["G3-11", "振動/ローム", 3, 6, 5, 8, 8],
+  ["G3-12", "証拠/の欠片", 3, 8, 6, 5, 8],
+  ["G3-13", "応答の/無い人", 3, 10, 4, 9, 4],
   ["G3-14", "沈む/ホーム", 3, 4, 10, 4, 9],
   ["G3-15", "逃げ道/消失", 3, 9, 4, 10, 4],
-  ["G3-16", "鍵穴/発光", 3, 4, 9, 4, 10],
-  ["G3-17", "監査/報告", 3, 7, 7, 7, 6],
+  ["G3-16", "鍵穴/ブローカー", 3, 4, 9, 4, 10],
+  ["G3-17", "死の/報告", 3, 7, 7, 7, 6],
   ["G3-18", "歪んだ/鏡", 3, 6, 7, 7, 7],
-  ["G3-19", "黒幕/近く", 3, 8, 7, 6, 6],
-  ["G3-20", "終点/裏側", 3, 6, 8, 7, 6],
-  ["G4-01", "電脳/門扉", 4, 9, 8, 7, 5],
-  ["G4-02", "虚空/改札", 4, 5, 9, 8, 7],
-  ["G4-03", "断罪/時刻", 4, 7, 5, 9, 8],
+  ["G3-19", "黒幕/の足跡", 3, 8, 7, 6, 6],
+  ["G3-20", "訪れない/終点", 3, 6, 8, 7, 6],
+  ["G4-01", "電脳/マシン", 4, 9, 8, 7, 5],
+  ["G4-02", "虚空の/愛", 4, 5, 9, 8, 7],
+  ["G4-03", "断罪の/時間", 4, 7, 5, 9, 8],
   ["G4-04", "危険/領域", 4, 8, 7, 5, 9],
-  ["G4-05", "極夜/非常線", 4, 9, 9, 6, 5],
-  ["G4-06", "残酷/信号", 4, 5, 9, 9, 6],
+  ["G4-05", "極夜/零度", 4, 9, 9, 6, 5],
+  ["G4-06", "残酷な/出来事", 4, 5, 9, 9, 6],
   ["G4-07", "制圧/コード", 4, 6, 5, 9, 9],
-  ["G4-08", "冷徹/追跡", 4, 9, 6, 5, 9],
+  ["G4-08", "冷徹な/追跡者", 4, 9, 6, 5, 9],
   ["G4-09", "無音/急行", 4, 8, 8, 7, 6],
   ["G4-10", "閉鎖/区画", 4, 6, 8, 8, 7],
-  ["G4-11", "真相/直前", 4, 7, 6, 8, 8],
-  ["G4-12", "漆黒/階層", 4, 8, 7, 6, 8],
-  ["G4-13", "逆転/証明", 4, 9, 7, 9, 4],
-  ["G4-14", "閃光/切札", 4, 4, 9, 7, 9],
+  ["G4-11", "真相の/直前", 4, 7, 6, 8, 8],
+  ["G4-12", "漆黒な/階層", 4, 8, 7, 6, 8],
+  ["G4-13", "未知の/領域", 4, 9, 7, 9, 4],
+  ["G4-14", "閃光/ダイナマイト", 4, 4, 9, 7, 9],
   ["G4-15", "限界/突破", 4, 9, 4, 9, 7],
-  ["G4-16", "密告/回路", 4, 7, 9, 4, 9],
-  ["G4-17", "災厄/番号", 4, 7, 7, 7, 7],
-  ["G4-18", "最後/改札", 4, 9, 8, 6, 5],
+  ["G4-16", "狂った/回路", 4, 7, 9, 4, 9],
+  ["G4-17", "災厄を/呼ぶ番号", 4, 7, 7, 7, 7],
+  ["G4-18", "最後の/時", 4, 9, 8, 6, 5],
   ["G4-19", "完全/包囲", 4, 5, 9, 8, 6],
   ["G4-20", "醒める/夢", 4, 6, 5, 9, 8],
 ];
@@ -286,7 +294,7 @@ function onClick(event) {
 
   if (action === "enter-opening") enterOpening();
   if (action === "start-intro") startIntro();
-  if (action === "external-link") window.location.href = "https://andleather.official.ec/categories/2110113";
+  if (action === "external-link") window.location.href = "https://tenki.jp/";
   if (action === "intro-next") advanceIntro();
   if (action === "go-direction") goDirection(Number(target.dataset.directionIndex));
   if (action === "nav-left") rotateDirection(-1);
@@ -296,6 +304,7 @@ function onClick(event) {
   if (action === "finish-win") finishWin();
   if (action === "reset-opening") resetToOpening();
   if (action === "ending-next") advanceEnding();
+  if (action === "ending-exit") window.location.href = ENDING_EXIT_URL;
   if (action === "toggle-mute") toggleMute();
 }
 
@@ -339,8 +348,8 @@ function renderOpening() {
       ${topbarHtml("")}
       <div class="bottom">
         <div class="commands">
-          <button class="command-button" data-action="start-intro">髪を切ってくれてありがとうございます。</button>
-          <button class="command-button" data-action="external-link">レザークラフトを始めてみる</button>
+          <button class="command-button" data-action="start-intro">「髪を切らせてくれてありがとうございます。」</button>
+          <button class="command-button" data-action="external-link">天気を確認する</button>
         </div>
       </div>
     `,
@@ -391,10 +400,11 @@ function renderGuess() {
   const character = game.currentCharacter;
   const nextAttempt = Math.min(game.guessHistory.length + 1, MAX_GUESS_ATTEMPTS);
   const dialogueText = game.feedback || character.lines[0];
+  const debugSecretChip = DEBUG_SHOW_SECRET_NUMBER ? `<div class="status-chip debug-chip">DEBUG 正解：${game.secret}</div>` : "";
   app.innerHTML = sceneHtml({
     image: character.image,
     content: `
-      ${topbarHtml(`<div class="status-chip">${character.label}：${character.name}</div><div class="status-chip">挑戦：${nextAttempt}/${MAX_GUESS_ATTEMPTS}</div>`)}
+      ${topbarHtml(`<div class="status-chip">${character.label}：${character.name}</div><div class="status-chip">挑戦：${nextAttempt}/${MAX_GUESS_ATTEMPTS}</div>${debugSecretChip}`)}
       <div class="bottom">
         ${dialogueHtml(character.name, dialogueText)}
         <form id="guess-form" class="guess-form">
@@ -430,14 +440,14 @@ function renderGuessResult() {
 
 function renderBattle() {
   const battle = game.battle;
-  const score = scoreBattle(battle);
+  const score = displayScoreBattle(battle);
   const turnText = battle.turn === "blue" ? "あなたの番" : `${game.currentCharacter.name}の番`;
   app.innerHTML = sceneHtml({
     image: game.currentCharacter.image,
     content: `
       ${topbarHtml(`<button class="surrender-button" data-action="reset-opening">諦める</button><div class="status-chip">${turnText}</div><div class="status-chip">先攻：${ownerLabel(battle.firstPlayer)}</div>`)}
       <div class="bottom battle-shell">
-        <div class="battle-message">${escapeHtml(battle.message)}</div>
+        <div class="battle-message">${battle.messageHtml || escapeHtml(battle.message)}</div>
         <div class="score-row">
           <div class="score-box">青 ${score.blue}</div>
           <div class="score-box">${turnText}</div>
@@ -482,7 +492,7 @@ function renderEnding() {
   setMusic(ASSETS.music.ending, true);
   const step = ENDING_STEPS[game.endingIndex];
   app.innerHTML = sceneHtml({
-    plain: true,
+    image: ASSETS.images.dupontTrain,
     content: `
       ${topbarHtml(`<div class="status-chip">完</div>`)}
       <div class="bottom">
@@ -490,7 +500,7 @@ function renderEnding() {
         ${
           game.endingIndex < ENDING_STEPS.length - 1
             ? `<button class="primary-button" data-action="ending-next">次へ</button>`
-            : `<button class="primary-button" disabled>完</button>`
+            : `<button class="primary-button" data-action="ending-exit">完</button>`
         }
       </div>
     `,
@@ -602,6 +612,7 @@ function startBattle() {
     selectedHandIndex: null,
     awaitingCpu: false,
     message: first === "blue" ? "あなたが先攻。" : `${game.currentCharacter.name}が先攻。`,
+    messageHtml: "",
   };
   game.screen = "battle";
   render();
@@ -648,7 +659,8 @@ function selectPlayerCard(index) {
   const battle = game.battle;
   if (!battle || battle.turn !== "blue") return;
   battle.selectedHandIndex = index;
-  battle.message = `${cardReadableName(battle.blueHand[index])}を選んだ。置く場所を選んで。`;
+  battle.message = "";
+  battle.messageHtml = `${cardNameMessageHtml(battle.blueHand[index], "blue")}を選んだ。置く場所を選んで。`;
   render();
 }
 
@@ -657,6 +669,7 @@ function placePlayerCard(position) {
   if (!battle || battle.turn !== "blue") return;
   if (battle.selectedHandIndex === null) {
     battle.message = "先に手札を選んで。";
+    battle.messageHtml = "";
     render();
     return;
   }
@@ -691,7 +704,8 @@ function applyMove(battle, move) {
   }
 
   battle.turn = opponent(move.owner);
-  battle.message = `${ownerLabel(move.owner)}が${cardReadableName(card)}を置いた。${captured ? `${captured}枚ひっくり返した。` : "ひっくり返せなかった。"}`;
+  battle.message = "";
+  battle.messageHtml = `${ownerLabel(move.owner)}が${cardNameMessageHtml(card, move.owner)}を置いた。${captured ? `${captured}枚ひっくり返した。` : "ひっくり返せなかった。"}`;
 }
 
 function finishBattle() {
@@ -864,6 +878,17 @@ function scoreBattle(battle) {
   return score;
 }
 
+function displayScoreBattle(battle) {
+  // 試合中の参考値は、青赤どちらも「盤面の所有枚数 + 残り手札」で表示します。
+  const score = { blue: 0, red: 0 };
+  for (const cell of battle.board) {
+    if (cell) score[cell.owner] += 1;
+  }
+  score.blue += battle.blueHand.length;
+  score.red += battle.redHand.length;
+  return score;
+}
+
 function winnerOf(battle) {
   const score = scoreBattle(battle);
   if (score.blue > score.red) return "blue";
@@ -912,6 +937,7 @@ function cloneBattle(battle) {
     selectedHandIndex: battle.selectedHandIndex,
     awaitingCpu: false,
     message: battle.message,
+    messageHtml: battle.messageHtml,
   };
 }
 
@@ -1006,15 +1032,21 @@ function setMusic(src, loop) {
     bgm.dataset.src = src;
     bgm.src = src;
     bgm.loop = loop;
-    bgm.volume = game.muted ? 0 : 0.62;
+    bgm.volume = game.muted ? 0 : musicVolume(src);
   }
   bgm.play().catch(() => {});
 }
 
 function toggleMute() {
   game.muted = !game.muted;
-  bgm.volume = game.muted ? 0 : 0.62;
+  bgm.volume = game.muted ? 0 : musicVolume(bgm.dataset.src);
   render();
+}
+
+function musicVolume(src) {
+  // 通常BGM2曲だけ、以前の8割程度の音量に下げます。エンディング曲は元の音量です。
+  if (src === ASSETS.music.opening || src === ASSETS.music.main) return QUIET_MUSIC_VOLUME;
+  return DEFAULT_MUSIC_VOLUME;
 }
 
 function sceneHtml({ image = "", plain = false, className = "", content }) {
@@ -1083,7 +1115,7 @@ function perfectGuessResultLine(character) {
     return "4ヒットだ。計器より正確じゃないか。最高グレードでいくぞ。";
   }
   if (character.id === "east") {
-    return "4ヒット。今の音、ぜんぶ重なった。最高グレードだよ。";
+    return "4ヒット。今の音、ぜんぶ綺麗に重なった。最高グレードだよ。";
   }
   return "4ヒット。鍵番号、完全に思い出したんだね。最高グレードだよ。";
 }
@@ -1149,9 +1181,19 @@ function cardNameHtml(name) {
     .join("");
 }
 
+function cardNameMessageHtml(card, owner) {
+  const className = owner === "blue" ? "blue" : "red";
+  return `<strong class="battle-card-name ${className}">&quot;${escapeHtml(cardReadableName(card))}&quot;</strong>`;
+}
+
 function cardReadableName(card) {
-  // メッセージ欄では改行用の「/」を中点に変えて、読みやすい1行名にします。
-  return String(card.name).split("/").filter(Boolean).join("・");
+  // メッセージ欄では「真相の/直前」のような行分け名を、自然な1行の通り名にします。
+  const lines = String(card.name).split("/").filter(Boolean);
+  return lines.reduce((name, line) => {
+    if (!name) return line;
+    if (name.endsWith("の") || line.startsWith("の")) return `${name}${line}`;
+    return `${name}の${line}`;
+  }, "");
 }
 
 function escapeHtml(value) {
