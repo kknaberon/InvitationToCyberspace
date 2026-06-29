@@ -96,7 +96,7 @@ const INTRO_STEPS = [
 ];
 
 const ENDING_STEPS = [
-  { speaker: "てほん", text: "これローソンで使える500円クーポン券の番号○○○だけど。" },
+  { speaker: "てほん", text: "これローソンで使える500円クーポン券だけど、使わないでね。https://apli.lawson.jp/ldcp/login/?campaignId=sjabtpu9zk&encDataCode=5ED8D094000919A57DC2327ECC46A1582E903B110C28E1D34F6045874169A48D" },
   { speaker: "てほん", text: "こんなげーむにまじになっちゃってどうするの 完" },
 ];
 
