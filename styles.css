@@ -10,6 +10,8 @@
   --gold: #ffd166;
   --green: #83e377;
   --shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  --scene-pad: 14px;
+  --scene-bottom-pad: max(22px, env(safe-area-inset-bottom));
 }
 
 * {
@@ -44,8 +46,10 @@ button {
 .app {
   position: relative;
   width: 100vw;
+  height: 100vh;
   height: 100svh;
-  min-height: 100vh;
+  height: 100dvh;
+  min-height: 0;
   overflow: hidden;
   background: #05070a;
 }
@@ -56,9 +60,10 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 14px;
-  padding-bottom: max(14px, env(safe-area-inset-bottom));
+  padding: var(--scene-pad);
+  padding-bottom: var(--scene-bottom-pad);
   isolation: isolate;
+  overflow: hidden;
 }
 
 .scene::before {
@@ -185,7 +190,16 @@ button {
 .bottom {
   z-index: 2;
   width: min(100%, 720px);
+  max-height: calc(100svh - 76px);
+  max-height: calc(100dvh - 76px);
   margin: 0 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.bottom::-webkit-scrollbar {
+  display: none;
 }
 
 .dialogue {
@@ -570,8 +584,14 @@ button {
 }
 
 @media (min-width: 760px) {
+  :root {
+    --scene-pad: 22px;
+    --scene-bottom-pad: max(22px, env(safe-area-inset-bottom));
+  }
+
   .scene {
-    padding: 22px;
+    padding: var(--scene-pad);
+    padding-bottom: var(--scene-bottom-pad);
   }
 
   .battle-shell {
@@ -589,7 +609,108 @@ button {
   }
 }
 
+@media (max-width: 520px) {
+  :root {
+    --scene-pad: 10px;
+    --scene-bottom-pad: max(24px, env(safe-area-inset-bottom));
+  }
+
+  .topbar {
+    top: max(8px, env(safe-area-inset-top));
+    left: 8px;
+    right: 8px;
+  }
+
+  .status-chip,
+  .icon-button {
+    min-height: 31px;
+  }
+
+  .icon-button {
+    width: 35px;
+  }
+
+  .dialogue {
+    padding: 10px;
+  }
+
+  .dialogue-text {
+    min-height: 36px;
+    line-height: 1.5;
+    font-size: 15px;
+  }
+
+  .command-button,
+  .primary-button {
+    min-height: 44px;
+  }
+
+  .primary-button {
+    margin-top: 8px;
+  }
+
+  .nav-button {
+    min-height: 48px;
+    font-size: 23px;
+  }
+
+  .progress-item {
+    min-height: 28px;
+  }
+
+  .guess-input {
+    height: 46px;
+  }
+
+  .guess-history-row {
+    min-height: 31px;
+    padding: 5px 8px;
+  }
+
+  .battle-shell {
+    gap: 5px;
+  }
+
+  .battle-message {
+    min-height: 34px;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .score-box {
+    min-height: 28px;
+  }
+
+  .battle-board {
+    width: clamp(218px, 63vw, 264px);
+    gap: 4px;
+  }
+
+  .hand-panel {
+    padding: 6px;
+  }
+
+  .hand-title {
+    margin-bottom: 4px;
+    font-size: 11px;
+  }
+
+  .hand-list {
+    gap: 4px;
+  }
+
+  .card-value {
+    width: 19px;
+    height: 19px;
+    font-size: 10px;
+  }
+}
+
 @media (max-height: 740px) {
+  :root {
+    --scene-bottom-pad: max(18px, env(safe-area-inset-bottom));
+  }
+
   .dialogue {
     padding: 10px;
   }
@@ -600,7 +721,7 @@ button {
   }
 
   .battle-board {
-    width: clamp(210px, 58vw, 268px);
+    width: clamp(198px, 54vw, 246px);
   }
 
   .card-value {
