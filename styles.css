@@ -314,23 +314,90 @@ button {
   background: rgba(255, 209, 102, 0.18);
 }
 
-.guess-form {
+.guess-panel {
   display: grid;
-  grid-template-columns: 1fr auto;
   gap: 8px;
   margin-top: 10px;
 }
 
-.guess-input {
+.guess-display {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.guess-digit-slot {
+  position: relative;
+  display: grid;
+  place-items: center;
   min-width: 0;
-  height: 50px;
+  height: 44px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.96);
   color: #071016;
-  padding: 0 12px;
-  font-size: 20px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 24px;
+  font-weight: 900;
   letter-spacing: 0;
+}
+
+.guess-digit-slot::after {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  width: 22px;
+  height: 2px;
+  background: rgba(7, 16, 22, 0.32);
+  border-radius: 999px;
+  content: "";
+  transform: translateX(-50%);
+}
+
+.guess-digit-slot.is-filled::after {
+  display: none;
+}
+
+.guess-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.keypad-button {
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(239, 247, 244, 0.94);
+  color: #071016;
+  font-size: 20px;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.keypad-button:active {
+  transform: translateY(1px);
+}
+
+.keypad-button:disabled {
+  cursor: default;
+  opacity: 0.48;
+  transform: none;
+}
+
+.keypad-utility {
+  background: rgba(9, 30, 40, 0.92);
+  color: var(--ink);
+}
+
+.keypad-submit {
+  grid-column: 1 / -1;
+  min-height: 44px;
+  background: linear-gradient(180deg, #ffd166, #e8a13a);
+  color: #071016;
+  font-size: 17px;
 }
 
 .guess-history {
@@ -658,8 +725,25 @@ button {
     min-height: 28px;
   }
 
-  .guess-input {
-    height: 46px;
+  .guess-panel,
+  .guess-display,
+  .guess-keypad {
+    gap: 5px;
+  }
+
+  .guess-digit-slot {
+    height: 40px;
+    font-size: 22px;
+  }
+
+  .keypad-button {
+    min-height: 40px;
+    font-size: 18px;
+  }
+
+  .keypad-submit {
+    min-height: 40px;
+    font-size: 16px;
   }
 
   .guess-history-row {
@@ -718,6 +802,41 @@ button {
   .dialogue-text {
     min-height: 34px;
     line-height: 1.45;
+  }
+
+  .guess-panel,
+  .guess-display,
+  .guess-keypad {
+    gap: 5px;
+  }
+
+  .guess-digit-slot {
+    height: 36px;
+    font-size: 20px;
+  }
+
+  .guess-digit-slot::after {
+    bottom: 8px;
+  }
+
+  .keypad-button {
+    min-height: 36px;
+    font-size: 17px;
+  }
+
+  .keypad-submit {
+    min-height: 38px;
+    font-size: 15px;
+  }
+
+  .guess-history {
+    gap: 5px;
+    margin-top: 6px;
+  }
+
+  .guess-history-row {
+    min-height: 28px;
+    padding: 4px 7px;
   }
 
   .battle-board {

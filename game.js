@@ -28,6 +28,7 @@ const ENDING_EXIT_URL = "https://x.com/te_hen1919810";
 
 // 数字当ては最大3回。途中で4ヒットなら、その場で最高グレードを確定します。
 const MAX_GUESS_ATTEMPTS = 3;
+const GUESS_FORMAT_ERROR = "4桁の数字で答えなきゃ。";
 
 // デバッグ用チート表示です。公開前は false にするか、この行をコメントアウトしてください。
 const DEBUG_SHOW_SECRET_NUMBER = false;
@@ -258,6 +259,8 @@ const game = {
   currentCharacter: null,
   secret: "",
   guess: "",
+  // 画面内テンキーで入力中の数字です。スマホのキーボードには依存しません。
+  guessDraft: "",
   guessHistory: [],
   matchedDigits: 0,
   blowDigits: 0,
@@ -272,11 +275,10 @@ const game = {
 };
 
 app.addEventListener("click", onClick);
-app.addEventListener("submit", onSubmit);
 render();
 
 function onClick(event) {
-  const target = event.target.closest("[data-action], [data-card-index], [data-cell-index]");
+  const target = event.target.closest("[data-action], [data-card-index], [data-cell-index], [data-guess-digit]");
   if (!target) return;
 
   if (target.dataset.cardIndex !== undefined) {
@@ -286,6 +288,11 @@ function onClick(event) {
 
   if (target.dataset.cellIndex !== undefined) {
     placePlayerCard(Number(target.dataset.cellIndex));
+    return;
+  }
+
+  if (target.dataset.guessDigit !== undefined) {
+    appendGuessDigit(target.dataset.guessDigit);
     return;
   }
 
@@ -300,6 +307,9 @@ function onClick(event) {
   if (action === "nav-left") rotateDirection(-1);
   if (action === "nav-right") rotateDirection(1);
   if (action === "talk") startNumberGuess();
+  if (action === "guess-clear") clearGuessDraft();
+  if (action === "guess-delete") deleteGuessDigit();
+  if (action === "submit-guess-keypad") submitGuess(game.guessDraft);
   if (action === "start-battle") startBattle();
   if (action === "finish-win") finishWin();
   if (action === "reset-opening") resetToOpening();
@@ -308,11 +318,33 @@ function onClick(event) {
   if (action === "toggle-mute") toggleMute();
 }
 
-function onSubmit(event) {
-  if (event.target.id !== "guess-form") return;
-  event.preventDefault();
-  const value = String(new FormData(event.target).get("guess") || "").trim();
-  submitGuess(value);
+function appendGuessDigit(digit) {
+  // テンキーの数字ボタンを押した時だけ、4桁まで入力中の数字に追加します。
+  if (game.screen !== "guess" || !/^\d$/.test(digit) || game.guessDraft.length >= 4) return;
+  game.guessDraft += digit;
+  clearGuessFormatError();
+  renderGuess();
+}
+
+function deleteGuessDigit() {
+  // 1文字戻すボタン用です。空の時は何も起きません。
+  if (game.screen !== "guess" || !game.guessDraft) return;
+  game.guessDraft = game.guessDraft.slice(0, -1);
+  clearGuessFormatError();
+  renderGuess();
+}
+
+function clearGuessDraft() {
+  // Cボタン用です。入力中の数字だけを消し、対戦状況や履歴は残します。
+  if (game.screen !== "guess" || !game.guessDraft) return;
+  game.guessDraft = "";
+  clearGuessFormatError();
+  renderGuess();
+}
+
+function clearGuessFormatError() {
+  // 桁数不足の注意だけ消します。直前のヒット＆ブロー台詞は履歴と合わせて残します。
+  if (game.feedback === GUESS_FORMAT_ERROR) game.feedback = "";
 }
 
 function render() {
@@ -407,16 +439,14 @@ function renderGuess() {
       ${topbarHtml(`<div class="status-chip">${character.label}：${character.name}</div><div class="status-chip">挑戦：${nextAttempt}/${MAX_GUESS_ATTEMPTS}</div>${debugSecretChip}`)}
       <div class="bottom">
         ${dialogueHtml(character.name, dialogueText)}
-        <form id="guess-form" class="guess-form">
-          <input class="guess-input" name="guess" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="0000" />
-          <button class="command-button" type="submit">答える</button>
-        </form>
+        <div class="guess-panel">
+          ${guessDisplayHtml()}
+          ${guessKeypadHtml()}
+        </div>
         ${guessHistoryHtml()}
       </div>
     `,
   });
-  const input = app.querySelector(".guess-input");
-  if (input) input.focus({ preventScroll: true });
 }
 
 function renderGuessResult() {
@@ -548,6 +578,7 @@ function startNumberGuess() {
   game.currentCharacter = direction;
   game.secret = randomFourDigits();
   game.guess = "";
+  game.guessDraft = "";
   game.guessHistory = [];
   game.matchedDigits = 0;
   game.blowDigits = 0;
@@ -561,7 +592,7 @@ function startNumberGuess() {
 
 function submitGuess(value) {
   if (!/^\d{4}$/.test(value)) {
-    game.feedback = "4桁の数字で答えなきゃ。";
+    game.feedback = GUESS_FORMAT_ERROR;
     renderGuess();
     return;
   }
@@ -569,6 +600,7 @@ function submitGuess(value) {
   const result = scoreHitAndBlow(game.secret, value);
   const attempt = game.guessHistory.length + 1;
   game.guess = value;
+  game.guessDraft = "";
   game.matchedDigits = result.hits;
   game.blowDigits = result.blows;
   game.guessHistory.push({ attempt, value, hits: result.hits, blows: result.blows });
@@ -638,6 +670,7 @@ function resetToOpening() {
   game.defeated = new Set();
   game.currentCharacter = null;
   game.guess = "";
+  game.guessDraft = "";
   game.guessHistory = [];
   game.matchedDigits = 0;
   game.blowDigits = 0;
@@ -1068,6 +1101,35 @@ function dialogueHtml(speaker, text) {
     <div class="dialogue">
       <div class="speaker">${escapeHtml(speaker)}：</div>
       <div class="dialogue-text">${escapeHtml(text)}</div>
+    </div>
+  `;
+}
+
+function guessDisplayHtml() {
+  // 入力中の4桁を、スマホキーボードではなく画面内の枠として見せます。
+  const slots = Array.from({ length: 4 }, (_, index) => {
+    const digit = game.guessDraft[index] || "";
+    const filledClass = digit ? " is-filled" : "";
+    return `<span class="guess-digit-slot${filledClass}">${escapeHtml(digit)}</span>`;
+  }).join("");
+
+  return `<div class="guess-display" aria-label="入力中の4桁">${slots}</div>`;
+}
+
+function guessKeypadHtml() {
+  // 電卓風テンキーです。4桁そろうまで「答える」は押せないようにします。
+  const digitButtons = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    .map((digit) => `<button class="keypad-button" type="button" data-guess-digit="${digit}" aria-label="${digit}を入力">${digit}</button>`)
+    .join("");
+  const submitDisabled = game.guessDraft.length === 4 ? "" : " disabled";
+
+  return `
+    <div class="guess-keypad">
+      ${digitButtons}
+      <button class="keypad-button keypad-utility" type="button" data-action="guess-clear" aria-label="入力を消す">C</button>
+      <button class="keypad-button" type="button" data-guess-digit="0" aria-label="0を入力">0</button>
+      <button class="keypad-button keypad-utility" type="button" data-action="guess-delete" aria-label="1文字戻す">←</button>
+      <button class="keypad-button keypad-submit" type="button" data-action="submit-guess-keypad"${submitDisabled}>答える</button>
     </div>
   `;
 }
