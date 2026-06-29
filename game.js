@@ -30,7 +30,7 @@ const ENDING_EXIT_URL = "https://x.com/te_hen1919810";
 const MAX_GUESS_ATTEMPTS = 3;
 
 // デバッグ用チート表示です。公開前は false にするか、この行をコメントアウトしてください。
-const DEBUG_SHOW_SECRET_NUMBER = true;
+const DEBUG_SHOW_SECRET_NUMBER = false;
 
 const DIRECTIONS = [
   {
