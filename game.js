@@ -744,14 +744,10 @@ function applyMove(battle, move) {
 function finishBattle() {
   const battle = game.battle;
   const score = scoreBattle(battle);
-  let result = "lose";
-  let note = `負け。青${score.blue} - 赤${score.red}`;
-  if (score.blue > score.red) {
-    result = "win";
-    note = `勝ち。青${score.blue} - 赤${score.red}`;
-  } else if (score.blue === score.red) {
-    note = `引き分け。青${score.blue} - 赤${score.red}。逃げ切れなかった。`;
-  }
+  const playerWon = score.blue >= score.red;
+  const result = playerWon ? "win" : "lose";
+  let note = playerWon ? `勝ち。青${score.blue} - 赤${score.red}` : `負け。青${score.blue} - 赤${score.red}`;
+  if (score.blue === score.red) note = `引き分け。青${score.blue} - 赤${score.red}。同点なので逃げ切り成功。`;
   game.outcome = { result, score, note };
   game.screen = "post-battle";
 }
@@ -924,9 +920,9 @@ function displayScoreBattle(battle) {
 
 function winnerOf(battle) {
   const score = scoreBattle(battle);
-  if (score.blue > score.red) return "blue";
-  if (score.red > score.blue) return "red";
-  return null;
+  // このゲームでは同点ならプレイヤー側（青）の勝ちとして扱います。
+  if (score.blue >= score.red) return "blue";
+  return "red";
 }
 
 function isBattleOver(battle) {
