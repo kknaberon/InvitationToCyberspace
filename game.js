@@ -15,8 +15,8 @@ const ASSETS = {
     west: `${IMAGE_PATH}To_West.webp`,
   },
   music: {
-    opening: `${MUSIC_PATH}Opening-Invitation to Cyberspace.wav`,
-    main: `${MUSIC_PATH}Train-Invitation to Cyberspace.wav`,
+    opening: `${MUSIC_PATH}Train-Invitation to Cyberspace.wav`,
+    main: `${MUSIC_PATH}Opening-Invitation to Cyberspace.wav`,
     ending: `${MUSIC_PATH}DJ_Dupont.mp3`,
   },
 };

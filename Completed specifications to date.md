@@ -5,8 +5,8 @@
 - ブラウザで遊ぶ単一ページのWebゲーム。
 - 画面は、スタート画面、オープニング、イントロ、メイン移動、数字当て、カードバトル、勝敗画面、エンディングで構成する。
 - BGM再生のため、最初に黒背景のスタート画面を表示し、「音が流れます」の注意とスタートボタンを出す。
-- オープニングは `WebpImage/OP.webp` と `Music/Opening-Invitation to Cyberspace.wav` を使う。
-- イントロ以降の通常進行は `Music/Train-Invitation to Cyberspace.wav` を使う。
+- オープニングは `WebpImage/OP.webp` と `Music/Train-Invitation to Cyberspace.wav` を使う。
+- イントロ以降の通常進行は `Music/Opening-Invitation to Cyberspace.wav` を使う。
 - エンディングは `Music/DJ_Dupont.mp3` を使う。
 
 ## メイン画面
