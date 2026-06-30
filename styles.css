@@ -180,9 +180,13 @@ button {
 
 .surrender-button {
   min-height: 28px;
+  border-color: rgba(255, 92, 100, 0.72);
   border-radius: 6px;
+  background: rgba(149, 25, 35, 0.88);
+  color: #fff7f7;
   padding: 0 8px;
   font-size: 11px;
+  font-weight: 800;
   cursor: pointer;
   pointer-events: auto;
 }
@@ -262,12 +266,18 @@ button {
 }
 
 .primary-button {
+  display: grid;
+  place-items: center;
   width: 100%;
   margin-top: 10px;
   color: #061015;
   background: linear-gradient(180deg, #f6d36f, #d8a438);
   border-color: rgba(255, 255, 255, 0.28);
   font-weight: 800;
+}
+
+.ending-link {
+  text-decoration: none;
 }
 
 .nav-controls {

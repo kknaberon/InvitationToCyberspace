@@ -26,8 +26,8 @@ const DEFAULT_MUSIC_VOLUME = 0.62;
 const QUIET_MUSIC_VOLUME = DEFAULT_MUSIC_VOLUME * 0.8;
 const ENDING_EXIT_URL = "https://x.com/te_hen1919810";
 
-// 数字当ては最大3回。途中で4ヒットなら、その場で最高グレードを確定します。
-const MAX_GUESS_ATTEMPTS = 3;
+// 数字当ては最大4回。途中で4ヒットなら、その場で最高グレードを確定します。
+const MAX_GUESS_ATTEMPTS = 4;
 const GUESS_FORMAT_ERROR = "4桁の数字で答えなきゃ。";
 
 // デバッグ用チート表示です。公開前は false にするか、この行をコメントアウトしてください。
@@ -74,7 +74,7 @@ const DIRECTIONS = [
     id: "west",
     label: "西",
     image: ASSETS.images.west,
-    name: "鉄道車両整備士たち",
+    name: "整備士たち",
     lines: [
       "おい！大丈夫か？西暦何年か答えてみろ！",
       "XXXX年だよ！",
@@ -97,7 +97,12 @@ const INTRO_STEPS = [
 ];
 
 const ENDING_STEPS = [
-  { speaker: "てほん", text: "これローソンで使える500円クーポン券だけど、使わないでね。https://apli.lawson.jp/ldcp/login/?campaignId=sjabtpu9zk&encDataCode=5ED8D094000919A57DC2327ECC46A1582E903B110C28E1D34F6045874169A48D" },
+  {
+    speaker: "てほん",
+    text: "これローソンで使える500円クーポン券だけど、使わないでね。",
+    linkUrl: "https://apli.lawson.jp/ldcp/login/?campaignId=sjabtpu9zk&encDataCode=5ED8D094000919A57DC2327ECC46A1582E903B110C28E1D34F6045874169A48D",
+    linkLabel: "別タブで開く",
+  },
   { speaker: "てほん", text: "こんなげーむにまじになっちゃってどうするの 完" },
 ];
 
@@ -453,15 +458,13 @@ function renderGuessResult() {
   const character = game.currentCharacter;
   const answerLine = character.lines[1].replace("xxxx", game.secret).replace("XXXX", game.secret);
   const resultLine = game.guessCompleteReason === "perfect" ? perfectGuessResultLine(character) : answerLine;
-  const resultMessage = `最終回答：${game.guess} / 正解：${game.secret} / ${game.matchedDigits}ヒット、${game.blowDigits}ブロー / カードグレード：${game.grade}`;
   app.innerHTML = sceneHtml({
     image: character.image,
     content: `
-      ${topbarHtml(`<div class="status-chip">${game.matchedDigits}ヒット</div><div class="status-chip">${game.blowDigits}ブロー</div><div class="status-chip">グレード${game.grade}</div>`)}
+      ${topbarHtml("")}
       <div class="bottom">
         ${dialogueHtml(character.name, resultLine)}
         ${guessHistoryHtml()}
-        <div class="battle-message">${escapeHtml(resultMessage)}</div>
         <button class="primary-button" data-action="start-battle">カードバトルへ</button>
       </div>
     `,
@@ -479,9 +482,9 @@ function renderBattle() {
       <div class="bottom battle-shell">
         <div class="battle-message">${battle.messageHtml || escapeHtml(battle.message)}</div>
         <div class="score-row">
-          <div class="score-box">青 ${score.blue}</div>
+          <div class="score-box">${ownerLabel("blue")} ${score.blue}</div>
           <div class="score-box">${turnText}</div>
-          <div class="score-box">赤 ${score.red}</div>
+          <div class="score-box">${ownerLabel("red")} ${score.red}</div>
         </div>
         <div class="hand-panel">
           <div class="hand-title">${game.currentCharacter.name}の手札</div>
@@ -503,7 +506,7 @@ function renderPostBattle() {
   const character = game.currentCharacter;
   const won = outcome.result === "win";
   const sceneClass = won ? "" : " penalty";
-  const scoreLine = `最終スコア 青${outcome.score.blue} - 赤${outcome.score.red}`;
+  const scoreLine = `最終スコア ${battleScoreLabel(outcome.score)}`;
   app.innerHTML = sceneHtml({
     image: character.image,
     className: sceneClass,
@@ -524,12 +527,13 @@ function renderEnding() {
   app.innerHTML = sceneHtml({
     image: ASSETS.images.dupontTrain,
     content: `
-      ${topbarHtml(`<div class="status-chip">完</div>`)}
+      ${topbarHtml("")}
       <div class="bottom">
         ${dialogueHtml(step.speaker, step.text)}
+        ${endingLinkHtml(step)}
         ${
           game.endingIndex < ENDING_STEPS.length - 1
-            ? `<button class="primary-button" data-action="ending-next">次へ</button>`
+            ? `<button class="primary-button" data-action="ending-next">次へ（戻れません）</button>`
             : `<button class="primary-button" data-action="ending-exit">完</button>`
         }
       </div>
@@ -746,8 +750,8 @@ function finishBattle() {
   const score = scoreBattle(battle);
   const playerWon = score.blue >= score.red;
   const result = playerWon ? "win" : "lose";
-  let note = playerWon ? `勝ち。青${score.blue} - 赤${score.red}` : `負け。青${score.blue} - 赤${score.red}`;
-  if (score.blue === score.red) note = `引き分け。青${score.blue} - 赤${score.red}。同点なので逃げ切り成功。`;
+  let note = playerWon ? `勝ち。${battleScoreLabel(score)}` : `負け。${battleScoreLabel(score)}`;
+  if (score.blue === score.red) note = `引き分け。${battleScoreLabel(score)}。同点なので逃げ切り成功。`;
   game.outcome = { result, score, note };
   game.screen = "post-battle";
 }
@@ -1039,7 +1043,11 @@ function opponent(owner) {
 }
 
 function ownerLabel(owner) {
-  return owner === "blue" ? "青" : "赤";
+  return owner === "blue" ? "あなた" : game.currentCharacter?.name || "相手";
+}
+
+function battleScoreLabel(score) {
+  return `${ownerLabel("blue")}${score.blue} - ${ownerLabel("red")}${score.red}`;
 }
 
 function cardAverage(card) {
@@ -1101,6 +1109,11 @@ function dialogueHtml(speaker, text) {
   `;
 }
 
+function endingLinkHtml(step) {
+  if (!step.linkUrl) return "";
+  return `<a class="primary-button ending-link" href="${escapeHtml(step.linkUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(step.linkLabel || "別タブで開く")}</a>`;
+}
+
 function guessDisplayHtml() {
   // 入力中の4桁を、スマホキーボードではなく画面内の枠として見せます。
   const slots = Array.from({ length: 4 }, (_, index) => {
@@ -1150,7 +1163,7 @@ function guessHistoryHtml() {
 }
 
 function hitAndBlowLine(character, result, remainingAttempts) {
-  // 3回目までは答えを明かさず、ヒット数とブロー数だけでプレイヤーを誘導します。
+  // 最終回答までは答えを明かさず、ヒット数とブロー数だけでプレイヤーを誘導します。
   const scoreText = `${result.hits}ヒット、${result.blows}ブロー`;
   if (character.id === "south") {
     return `${scoreText}だぜ。切り口は悪くないな。あと${remainingAttempts}回。`;
